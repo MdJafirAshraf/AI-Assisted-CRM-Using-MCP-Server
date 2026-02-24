@@ -9,13 +9,13 @@ from app.schemas import LeadCreate, LeadUpdate
 router = APIRouter()
 
 
-# ── HTML Page ──────────────────────────────────────────────
+#  HTML Page 
 @router.get("/leads", response_class=HTMLResponse, include_in_schema=False)
 def leads_page(request: Request):
     return request.app.state.templates.TemplateResponse("leads.html", {"request": request})
 
 
-# ── API Endpoints ──────────────────────────────────────────
+#  API Endpoints 
 @router.get("/api/leads", summary="List all leads", tags=["Leads"])
 def list_leads(db: Session = Depends(get_db)):
     """Retrieve all leads from the CRM database."""

@@ -9,13 +9,13 @@ from app.schemas import DealCreate, DealUpdate
 router = APIRouter()
 
 
-# ── HTML Page ──────────────────────────────────────────────
+#  HTML Page 
 @router.get("/deals", response_class=HTMLResponse, include_in_schema=False)
 def deals_page(request: Request):
     return request.app.state.templates.TemplateResponse("deals.html", {"request": request})
 
 
-# ── API Endpoints ──────────────────────────────────────────
+#  API Endpoints 
 @router.get("/api/deals", summary="List all deals", tags=["Deals"])
 def list_deals(db: Session = Depends(get_db)):
     """Retrieve all deals from the CRM database."""

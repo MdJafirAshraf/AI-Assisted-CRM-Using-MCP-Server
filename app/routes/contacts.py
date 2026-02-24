@@ -9,21 +9,21 @@ from app.schemas import ContactCreate, ContactUpdate
 router = APIRouter()
 
 
-# ── HTML Page ──────────────────────────────────────────────
+#  HTML Page 
 @router.get("/contacts", response_class=HTMLResponse, include_in_schema=False)
 def contacts_page(request: Request):
     return request.app.state.templates.TemplateResponse("contacts.html", {"request": request})
 
 
-# ── API Endpoints ──────────────────────────────────────────
-@router.get("/api/contacts", summary="List all contacts", tags=["Contacts"])
+#  API Endpoints 
+@router.get("/api/contacts", summary="List all contacts", tags=["Contacts"], operation_id="list_contacts")
 def list_contacts(db: Session = Depends(get_db)):
     """Retrieve all contacts from the CRM database."""
     contacts = db.query(Contact).order_by(Contact.created_at.desc()).all()
     return [c.to_dict() for c in contacts]
 
 
-@router.get("/api/contacts/{contact_id}", summary="Get a contact", tags=["Contacts"])
+@router.get("/api/contacts/{contact_id}", summary="Get a contact", tags=["Contacts"], operation_id="get_contact")
 def get_contact(contact_id: int, db: Session = Depends(get_db)):
     """Retrieve a single contact by ID."""
     contact = db.query(Contact).filter(Contact.id == contact_id).first()
@@ -32,7 +32,7 @@ def get_contact(contact_id: int, db: Session = Depends(get_db)):
     return contact.to_dict()
 
 
-@router.post("/api/contacts", summary="Create a contact", tags=["Contacts"])
+@router.post("/api/contacts", summary="Create a contact", tags=["Contacts"], operation_id="create_contact")
 def create_contact(
     data: ContactCreate,
     db: Session = Depends(get_db),

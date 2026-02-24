@@ -3,7 +3,7 @@
    Chatbot widget, toasts, sidebar toggle
    ═══════════════════════════════════════════════════════════ */
 
-// ── Toast Utility ─────────────────────────────────────────
+//  Toast Utility ─
 function showToast(message, type = "info") {
   const icons = {
     success: "bi-check-circle-fill",
@@ -28,7 +28,7 @@ function showToast(message, type = "info") {
   toastEl.addEventListener("hidden.bs.toast", () => toastEl.remove());
 }
 
-// ── Sidebar Toggle (Mobile) ─────────────────────────────
+//  Sidebar Toggle (Mobile) ─
 $(document).ready(function () {
   $("#sidebarToggle").click(function () {
     $("#sidebar").toggleClass("open");
@@ -44,7 +44,7 @@ $(document).ready(function () {
   });
 });
 
-// ── Chatbot Widget ──────────────────────────────────────
+//  Chatbot Widget 
 $(document).ready(function () {
   const $fab = $("#chatbotFab");
   const $popup = $("#chatbotPopup");

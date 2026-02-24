@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from typing import Optional
 
 
-# ── Contact Schemas ──────────────────────────────────────────
+#  Contact Schemas 
 class ContactCreate(BaseModel):
     name: str
     email: str
@@ -23,7 +23,7 @@ class ContactUpdate(BaseModel):
     notes: Optional[str] = None
 
 
-# ── Lead Schemas ─────────────────────────────────────────────
+#  Lead Schemas ─
 class LeadCreate(BaseModel):
     name: str
     email: Optional[str] = ""
@@ -44,7 +44,7 @@ class LeadUpdate(BaseModel):
     notes: Optional[str] = None
 
 
-# ── Deal Schemas ─────────────────────────────────────────────
+#  Deal Schemas ─
 class DealCreate(BaseModel):
     title: str
     contact_id: Optional[int] = None
@@ -65,7 +65,7 @@ class DealUpdate(BaseModel):
     notes: Optional[str] = None
 
 
-# ── Task Schemas ─────────────────────────────────────────────
+#  Task Schemas ─
 class TaskCreate(BaseModel):
     title: str
     description: Optional[str] = ""

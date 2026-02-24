@@ -9,13 +9,13 @@ from app.schemas import TaskCreate, TaskUpdate
 router = APIRouter()
 
 
-# ── HTML Page ──────────────────────────────────────────────
+#  HTML Page 
 @router.get("/tasks", response_class=HTMLResponse, include_in_schema=False)
 def tasks_page(request: Request):
     return request.app.state.templates.TemplateResponse("tasks.html", {"request": request})
 
 
-# ── API Endpoints ──────────────────────────────────────────
+#  API Endpoints 
 @router.get("/api/tasks", summary="List all tasks", tags=["Tasks"])
 def list_tasks(db: Session = Depends(get_db)):
     """Retrieve all tasks from the CRM database."""

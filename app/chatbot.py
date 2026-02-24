@@ -1,6 +1,6 @@
 """
 CRM Chatbot Engine
-───────────────────
+─
 Uses Google Gemini LLM to interpret natural-language user messages,
 decide which CRM API to call, execute the operation via httpx,
 and return a friendly response.
