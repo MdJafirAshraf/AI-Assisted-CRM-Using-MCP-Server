@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+{% block title %}Tasks{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title"><i class="bi bi-check2-square"></i> Tasks</h1>
+        <p class="page-subtitle">Stay on top of your CRM activities</p>
+    </div>
+    <button class="btn btn-gradient" id="btnAddTask" data-bs-toggle="modal" data-bs-target="#taskModal">
+        <i class="bi bi-plus-lg"></i> Add Task
+    </button>
+</div>
+
+<!-- Filters -->
+<div class="glass-card mb-4">
+    <div class="card-body-custom d-flex gap-3 align-items-center flex-wrap">
+        <div class="input-group" style="max-width:300px;">
+            <span class="input-group-text bg-transparent border-secondary"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control bg-transparent border-secondary" id="taskSearch"
+                placeholder="Search tasks...">
+        </div>
+        <select class="form-select bg-transparent border-secondary" style="max-width:160px;" id="taskStatusFilter">
+            <option value="">All Status</option>
+            <option value="todo">To Do</option>
+            <option value="in_progress">In Progress</option>
+            <option value="done">Done</option>
+        </select>
+        <select class="form-select bg-transparent border-secondary" style="max-width:160px;" id="taskPriorityFilter">
+            <option value="">All Priority</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+        </select>
+        <span class="ms-auto text-muted" id="taskCount">0 tasks</span>
+    </div>
+</div>
+
+<!-- Tasks List -->
+<div class="row g-3" id="tasksList">
+    <div class="col-12 text-center text-muted py-5">Loading tasks...</div>
+</div>
+
+<!-- ═══ Task Modal ═══ -->
+<div class="modal fade" id="taskModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content glass-modal">
+            <div class="modal-header border-0">
+                <h5 class="modal-title" id="taskModalTitle"><i class="bi bi-check2-square"></i> Add Task</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="taskForm">
+                    <input type="hidden" id="taskId">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Title *</label>
+                            <input type="text" class="form-control" id="taskTitle" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" id="taskDescription" rows="2"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Priority</label>
+                            <select class="form-select" id="taskPriority">
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" id="taskStatus">
+                                <option value="todo">To Do</option>
+                                <option value="in_progress">In Progress</option>
+                                <option value="done">Done</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Due Date</label>
+                            <input type="date" class="form-control" id="taskDueDate">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Related To</label>
+                            <select class="form-select" id="taskRelatedTo">
+                                <option value="">None</option>
+                                <option value="contact">Contact</option>
+                                <option value="lead">Lead</option>
+                                <option value="deal">Deal</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-gradient" id="saveTask">Save Task</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(function () {
+        let allTasks = [];
+
+        function loadTasks() {
+            $.get('/api/tasks', function (data) {
+                allTasks = data;
+                renderTasks(data);
+            });
+        }
+        loadTasks();
+
+        function renderTasks(tasks) {
+            const search = $('#taskSearch').val().toLowerCase();
+            const status = $('#taskStatusFilter').val();
+            const priority = $('#taskPriorityFilter').val();
+            let filtered = tasks.filter(t => {
+                let m = true;
+                if (search) m = m && (t.title.toLowerCase().includes(search) || (t.description || '').toLowerCase().includes(search));
+                if (status) m = m && t.status === status;
+                if (priority) m = m && t.priority === priority;
+                return m;
+            });
+            $('#taskCount').text(filtered.length + ' task' + (filtered.length !== 1 ? 's' : ''));
+            if (filtered.length === 0) {
+                $('#tasksList').html('<div class="col-12 text-center text-muted py-5">No tasks found</div>');
+                return;
+            }
+            const priorityColors = { high: 'danger', medium: 'warning', low: 'info' };
+            const statusIcons = { todo: 'bi-circle', in_progress: 'bi-play-circle-fill', done: 'bi-check-circle-fill' };
+            const statusLabels = { todo: 'To Do', in_progress: 'In Progress', done: 'Done' };
+            let html = '';
+            filtered.forEach(t => {
+                html += `<div class="col-lg-6 col-xl-4">
+                <div class="task-card glass-card">
+                    <div class="card-body-custom">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge bg-${priorityColors[t.priority]} badge-priority">${t.priority.toUpperCase()}</span>
+                            <div>
+                                <button class="btn btn-sm btn-link text-info edit-task p-0 me-2" data-id="${t.id}"><i class="bi bi-pencil-fill"></i></button>
+                                <button class="btn btn-sm btn-link text-danger delete-task p-0" data-id="${t.id}"><i class="bi bi-trash-fill"></i></button>
+                            </div>
+                        </div>
+                        <h6 class="mb-1">${t.title}</h6>
+                        <p class="text-muted small mb-2">${t.description || 'No description'}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-secondary"><i class="bi ${statusIcons[t.status]}"></i> ${statusLabels[t.status]}</span>
+                            ${t.due_date ? `<small class="text-muted"><i class="bi bi-calendar-event"></i> ${t.due_date}</small>` : ''}
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+            });
+            $('#tasksList').html(html);
+        }
+
+        $('#taskSearch, #taskStatusFilter, #taskPriorityFilter').on('input change', () => renderTasks(allTasks));
+
+        $('#saveTask').click(function () {
+            const id = $('#taskId').val();
+            const data = {
+                title: $('#taskTitle').val(), description: $('#taskDescription').val(),
+                priority: $('#taskPriority').val(), status: $('#taskStatus').val(),
+                due_date: $('#taskDueDate').val(), related_to: $('#taskRelatedTo').val()
+            };
+            $.ajax({
+                url: id ? `/api/tasks/${id}` : '/api/tasks',
+                method: id ? 'PUT' : 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: () => {
+                    $('#taskModal').modal('hide');
+                    showToast(id ? 'Task updated!' : 'Task created!', 'success');
+                    loadTasks();
+                }, error: xhr => showToast('Error: ' + (xhr.responseJSON?.detail || 'Something went wrong'), 'danger')
+            });
+        });
+
+        $(document).on('click', '.edit-task', function () {
+            const id = $(this).data('id');
+            $.get(`/api/tasks/${id}`, function (t) {
+                $('#taskModalTitle').html('<i class="bi bi-pencil-fill"></i> Edit Task');
+                $('#taskId').val(t.id); $('#taskTitle').val(t.title);
+                $('#taskDescription').val(t.description); $('#taskPriority').val(t.priority);
+                $('#taskStatus').val(t.status); $('#taskDueDate').val(t.due_date);
+                $('#taskRelatedTo').val(t.related_to);
+                $('#taskModal').modal('show');
+            });
+        });
+
+        $(document).on('click', '.delete-task', function () {
+            if (confirm('Delete this task?')) {
+                $.ajax({
+                    url: `/api/tasks/${$(this).data('id')}`, method: 'DELETE', success: () => {
+                        showToast('Task deleted!', 'warning'); loadTasks();
+                    }
+                });
+            }
+        });
+
+        $('#taskModal').on('hidden.bs.modal', () => {
+            $('#taskForm')[0].reset(); $('#taskId').val('');
+            $('#taskModalTitle').html('<i class="bi bi-check2-square"></i> Add Task');
+        });
+    });
+</script>
+{% endblock %}

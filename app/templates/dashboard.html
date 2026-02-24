@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title"><i class="bi bi-grid-1x2-fill"></i> Dashboard</h1>
+    <p class="page-subtitle">Welcome back! Here's your CRM overview.</p>
+</div>
+
+<!-- ═══ Summary Cards ═══ -->
+<div class="row g-4 mb-4">
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card stat-card-purple" id="stat-contacts">
+            <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
+            <div class="stat-info">
+                <h3>{{ stats.total_contacts }}</h3>
+                <p>Total Contacts</p>
+                <small class="stat-sub"><i class="bi bi-circle-fill text-success"></i> {{ stats.active_contacts }}
+                    active</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card stat-card-blue" id="stat-leads">
+            <div class="stat-icon"><i class="bi bi-funnel-fill"></i></div>
+            <div class="stat-info">
+                <h3>{{ stats.total_leads }}</h3>
+                <p>Total Leads</p>
+                <small class="stat-sub"><i class="bi bi-circle-fill text-warning"></i> {{ stats.new_leads }} new</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card stat-card-green" id="stat-deals">
+            <div class="stat-icon"><i class="bi bi-currency-dollar"></i></div>
+            <div class="stat-info">
+                <h3>{{ stats.total_deals }}</h3>
+                <p>Total Deals</p>
+                <small class="stat-sub"><i class="bi bi-trophy-fill text-warning"></i> {{ stats.won_deals }} won</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card stat-card-orange" id="stat-tasks">
+            <div class="stat-icon"><i class="bi bi-check2-square"></i></div>
+            <div class="stat-info">
+                <h3>{{ stats.total_tasks }}</h3>
+                <p>Total Tasks</p>
+                <small class="stat-sub"><i class="bi bi-clock-fill text-info"></i> {{ stats.pending_tasks }}
+                    pending</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ Deal Pipeline & Total Value ═══ -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="glass-card">
+            <div class="card-header-custom">
+                <h5><i class="bi bi-bar-chart-fill"></i> Deal Pipeline</h5>
+            </div>
+            <div class="card-body-custom">
+                <div class="pipeline-chart">
+                    {% set stages = ['discovery', 'proposal', 'negotiation', 'won', 'lost'] %}
+                    {% set colors = ['#7c3aed', '#3b82f6', '#f59e0b', '#10b981', '#ef4444'] %}
+                    {% set max_count = [stats.deals_by_stage.discovery, stats.deals_by_stage.proposal,
+                    stats.deals_by_stage.negotiation, stats.deals_by_stage.won, stats.deals_by_stage.lost] | max %}
+                    {% for stage in stages %}
+                    <div class="pipeline-bar-group">
+                        <span class="pipeline-label">{{ stage | capitalize }}</span>
+                        <div class="pipeline-bar-track">
+                            <div class="pipeline-bar"
+                                style="width: {{ (stats.deals_by_stage[stage] / (max_count if max_count > 0 else 1) * 100) | int }}%; background: {{ colors[loop.index0] }};">
+                            </div>
+                        </div>
+                        <span class="pipeline-count">{{ stats.deals_by_stage[stage] }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="glass-card total-value-card">
+            <div class="card-header-custom">
+                <h5><i class="bi bi-wallet2"></i> Total Deal Value</h5>
+            </div>
+            <div class="card-body-custom text-center">
+                <div class="total-value-amount">${{ "{:,.2f}".format(stats.total_deal_value) }}</div>
+                <p class="text-muted mt-2">Across {{ stats.total_deals }} deal{{ 's' if stats.total_deals != 1 }}</p>
+                <div class="mt-3">
+                    <span class="badge bg-success me-1"><i class="bi bi-trophy-fill"></i> {{ stats.won_deals }}
+                        Won</span>
+                    <span class="badge bg-warning me-1"><i class="bi bi-star-fill"></i> {{ stats.qualified_leads }}
+                        Qualified</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ Recent Activity ═══ -->
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="glass-card">
+            <div class="card-header-custom">
+                <h5><i class="bi bi-people-fill"></i> Recent Contacts</h5>
+                <a href="/contacts" class="btn btn-sm btn-outline-secondary">View All</a>
+            </div>
+            <div class="card-body-custom p-0">
+                <ul class="activity-list">
+                    {% for c in stats.recent_contacts %}
+                    <li class="activity-item">
+                        <div class="activity-avatar" style="background: linear-gradient(135deg, #7c3aed, #a855f7);">{{
+                            c.name[0] | upper }}</div>
+                        <div class="activity-info">
+                            <strong>{{ c.name }}</strong>
+                            <small>{{ c.company or c.email }}</small>
+                        </div>
+                        <span class="badge bg-{{ 'success' if c.status == 'active' else 'secondary' }}">{{ c.status
+                            }}</span>
+                    </li>
+                    {% else %}
+                    <li class="activity-item text-muted text-center py-4">No contacts yet</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="glass-card">
+            <div class="card-header-custom">
+                <h5><i class="bi bi-funnel-fill"></i> Recent Leads</h5>
+                <a href="/leads" class="btn btn-sm btn-outline-secondary">View All</a>
+            </div>
+            <div class="card-body-custom p-0">
+                <ul class="activity-list">
+                    {% for l in stats.recent_leads %}
+                    <li class="activity-item">
+                        <div class="activity-avatar" style="background: linear-gradient(135deg, #3b82f6, #60a5fa);">{{
+                            l.name[0] | upper }}</div>
+                        <div class="activity-info">
+                            <strong>{{ l.name }}</strong>
+                            <small>{{ l.company }} · ${{ "{:,.0f}".format(l.value) }}</small>
+                        </div>
+                        <span
+                            class="badge bg-{{ 'info' if l.status == 'new' else ('warning' if l.status == 'contacted' else ('success' if l.status == 'qualified' else 'danger')) }}">{{
+                            l.status }}</span>
+                    </li>
+                    {% else %}
+                    <li class="activity-item text-muted text-center py-4">No leads yet</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="glass-card">
+            <div class="card-header-custom">
+                <h5><i class="bi bi-currency-dollar"></i> Recent Deals</h5>
+                <a href="/deals" class="btn btn-sm btn-outline-secondary">View All</a>
+            </div>
+            <div class="card-body-custom p-0">
+                <ul class="activity-list">
+                    {% for d in stats.recent_deals %}
+                    <li class="activity-item">
+                        <div class="activity-avatar" style="background: linear-gradient(135deg, #10b981, #34d399);">{{
+                            d.title[0] | upper }}</div>
+                        <div class="activity-info">
+                            <strong>{{ d.title }}</strong>
+                            <small>${{ "{:,.0f}".format(d.value) }} · {{ d.stage | capitalize }}</small>
+                        </div>
+                        <span
+                            class="badge bg-{{ 'success' if d.stage == 'won' else ('danger' if d.stage == 'lost' else 'primary') }}">{{
+                            d.stage }}</span>
+                    </li>
+                    {% else %}
+                    <li class="activity-item text-muted text-center py-4">No deals yet</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

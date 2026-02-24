@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+{% block title %}Deals{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title"><i class="bi bi-currency-dollar"></i> Deals</h1>
+        <p class="page-subtitle">Pipeline management for your deals</p>
+    </div>
+    <button class="btn btn-gradient" id="btnAddDeal" data-bs-toggle="modal" data-bs-target="#dealModal">
+        <i class="bi bi-plus-lg"></i> Add Deal
+    </button>
+</div>
+
+<!-- Pipeline Board -->
+<div class="pipeline-board" id="pipelineBoard">
+    <div class="pipeline-column" data-stage="discovery">
+        <div class="pipeline-col-header" style="border-top: 3px solid #7c3aed;">
+            <h6><i class="bi bi-search"></i> Discovery</h6>
+            <span class="badge bg-secondary stage-count" id="count-discovery">0</span>
+        </div>
+        <div class="pipeline-col-body" id="col-discovery"></div>
+    </div>
+    <div class="pipeline-column" data-stage="proposal">
+        <div class="pipeline-col-header" style="border-top: 3px solid #3b82f6;">
+            <h6><i class="bi bi-file-earmark-text"></i> Proposal</h6>
+            <span class="badge bg-secondary stage-count" id="count-proposal">0</span>
+        </div>
+        <div class="pipeline-col-body" id="col-proposal"></div>
+    </div>
+    <div class="pipeline-column" data-stage="negotiation">
+        <div class="pipeline-col-header" style="border-top: 3px solid #f59e0b;">
+            <h6><i class="bi bi-chat-dots"></i> Negotiation</h6>
+            <span class="badge bg-secondary stage-count" id="count-negotiation">0</span>
+        </div>
+        <div class="pipeline-col-body" id="col-negotiation"></div>
+    </div>
+    <div class="pipeline-column" data-stage="won">
+        <div class="pipeline-col-header" style="border-top: 3px solid #10b981;">
+            <h6><i class="bi bi-trophy-fill"></i> Won</h6>
+            <span class="badge bg-secondary stage-count" id="count-won">0</span>
+        </div>
+        <div class="pipeline-col-body" id="col-won"></div>
+    </div>
+    <div class="pipeline-column" data-stage="lost">
+        <div class="pipeline-col-header" style="border-top: 3px solid #ef4444;">
+            <h6><i class="bi bi-x-circle-fill"></i> Lost</h6>
+            <span class="badge bg-secondary stage-count" id="count-lost">0</span>
+        </div>
+        <div class="pipeline-col-body" id="col-lost"></div>
+    </div>
+</div>
+
+<!-- ═══ Deal Modal ═══ -->
+<div class="modal fade" id="dealModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content glass-modal">
+            <div class="modal-header border-0">
+                <h5 class="modal-title" id="dealModalTitle"><i class="bi bi-currency-dollar"></i> Add Deal</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="dealForm">
+                    <input type="hidden" id="dealId">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Title *</label>
+                            <input type="text" class="form-control" id="dealTitle" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Value ($)</label>
+                            <input type="number" class="form-control" id="dealValue" min="0" step="0.01" value="0">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Stage</label>
+                            <select class="form-select" id="dealStage">
+                                <option value="discovery">Discovery</option>
+                                <option value="proposal">Proposal</option>
+                                <option value="negotiation">Negotiation</option>
+                                <option value="won">Won</option>
+                                <option value="lost">Lost</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Probability (%)</label>
+                            <input type="number" class="form-control" id="dealProbability" min="0" max="100" value="10">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Expected Close</label>
+                            <input type="date" class="form-control" id="dealExpectedClose">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Contact ID</label>
+                            <input type="number" class="form-control" id="dealContactId"
+                                placeholder="Optional – link to a contact">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Notes</label>
+                            <textarea class="form-control" id="dealNotes" rows="2"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-gradient" id="saveDeal">Save Deal</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(function () {
+        function loadDeals() {
+            $.get('/api/deals', function (deals) {
+                const stages = ['discovery', 'proposal', 'negotiation', 'won', 'lost'];
+                stages.forEach(s => { $(`#col-${s}`).html(''); $(`#count-${s}`).text(0); });
+                const grouped = {};
+                stages.forEach(s => grouped[s] = []);
+                deals.forEach(d => { if (grouped[d.stage]) grouped[d.stage].push(d); });
+                stages.forEach(s => {
+                    $(`#count-${s}`).text(grouped[s].length);
+                    grouped[s].forEach(d => {
+                        $(`#col-${s}`).append(`
+                        <div class="deal-card" data-id="${d.id}">
+                            <div class="deal-card-header">
+                                <strong>${d.title}</strong>
+                                <div class="deal-card-actions">
+                                    <button class="btn btn-sm btn-link text-info edit-deal p-0 me-2" data-id="${d.id}"><i class="bi bi-pencil-fill"></i></button>
+                                    <button class="btn btn-sm btn-link text-danger delete-deal p-0" data-id="${d.id}"><i class="bi bi-trash-fill"></i></button>
+                                </div>
+                            </div>
+                            <div class="deal-card-value">$${Number(d.value).toLocaleString()}</div>
+                            ${d.contact_name ? `<small class="text-muted"><i class="bi bi-person"></i> ${d.contact_name}</small>` : ''}
+                            <div class="deal-card-footer">
+                                <span class="badge bg-secondary"><i class="bi bi-percent"></i> ${d.probability}%</span>
+                                ${d.expected_close ? `<small class="text-muted"><i class="bi bi-calendar"></i> ${d.expected_close}</small>` : ''}
+                            </div>
+                        </div>
+                    `);
+                    });
+                });
+            });
+        }
+        loadDeals();
+
+        $('#saveDeal').click(function () {
+            const id = $('#dealId').val();
+            const data = {
+                title: $('#dealTitle').val(), value: parseFloat($('#dealValue').val()) || 0,
+                stage: $('#dealStage').val(), probability: parseInt($('#dealProbability').val()) || 10,
+                expected_close: $('#dealExpectedClose').val(), notes: $('#dealNotes').val()
+            };
+            const cid = $('#dealContactId').val();
+            if (cid) data.contact_id = parseInt(cid);
+            $.ajax({
+                url: id ? `/api/deals/${id}` : '/api/deals',
+                method: id ? 'PUT' : 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: () => {
+                    $('#dealModal').modal('hide');
+                    showToast(id ? 'Deal updated!' : 'Deal created!', 'success');
+                    loadDeals();
+                }, error: xhr => showToast('Error: ' + (xhr.responseJSON?.detail || 'Something went wrong'), 'danger')
+            });
+        });
+
+        $(document).on('click', '.edit-deal', function () {
+            const id = $(this).data('id');
+            $.get(`/api/deals/${id}`, function (d) {
+                $('#dealModalTitle').html('<i class="bi bi-pencil-fill"></i> Edit Deal');
+                $('#dealId').val(d.id); $('#dealTitle').val(d.title);
+                $('#dealValue').val(d.value); $('#dealStage').val(d.stage);
+                $('#dealProbability').val(d.probability); $('#dealExpectedClose').val(d.expected_close);
+                $('#dealContactId').val(d.contact_id || ''); $('#dealNotes').val(d.notes);
+                $('#dealModal').modal('show');
+            });
+        });
+
+        $(document).on('click', '.delete-deal', function () {
+            if (confirm('Delete this deal?')) {
+                $.ajax({
+                    url: `/api/deals/${$(this).data('id')}`, method: 'DELETE', success: () => {
+                        showToast('Deal deleted!', 'warning'); loadDeals();
+                    }
+                });
+            }
+        });
+
+        $('#dealModal').on('hidden.bs.modal', () => {
+            $('#dealForm')[0].reset(); $('#dealId').val('');
+            $('#dealModalTitle').html('<i class="bi bi-currency-dollar"></i> Add Deal');
+        });
+    });
+</script>
+{% endblock %}

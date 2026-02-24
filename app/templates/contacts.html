@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+{% block title %}Contacts{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title"><i class="bi bi-people-fill"></i> Contacts</h1>
+        <p class="page-subtitle">Manage your customer contacts</p>
+    </div>
+    <button class="btn btn-gradient" id="btnAddContact" data-bs-toggle="modal" data-bs-target="#contactModal">
+        <i class="bi bi-plus-lg"></i> Add Contact
+    </button>
+</div>
+
+<!-- Filters -->
+<div class="glass-card mb-4">
+    <div class="card-body-custom d-flex gap-3 align-items-center flex-wrap">
+        <div class="input-group" style="max-width:300px;">
+            <span class="input-group-text bg-transparent border-secondary"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control bg-transparent border-secondary" id="contactSearch"
+                placeholder="Search contacts...">
+        </div>
+        <select class="form-select bg-transparent border-secondary" style="max-width:160px;" id="contactStatusFilter">
+            <option value="">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+        </select>
+        <span class="ms-auto text-muted" id="contactCount">0 contacts</span>
+    </div>
+</div>
+
+<!-- Contacts Table -->
+<div class="glass-card">
+    <div class="card-body-custom p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="contactsTable">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Company</th>
+                        <th>Position</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="contactsBody">
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-5">Loading contacts...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ Contact Modal ═══ -->
+<div class="modal fade" id="contactModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content glass-modal">
+            <div class="modal-header border-0">
+                <h5 class="modal-title" id="contactModalTitle"><i class="bi bi-person-plus-fill"></i> Add Contact</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="contactForm">
+                    <input type="hidden" id="contactId">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Name *</label>
+                            <input type="text" class="form-control" id="contactName" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email *</label>
+                            <input type="email" class="form-control" id="contactEmail" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Phone</label>
+                            <input type="text" class="form-control" id="contactPhone">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Company</label>
+                            <input type="text" class="form-control" id="contactCompany">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Position</label>
+                            <input type="text" class="form-control" id="contactPosition">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" id="contactStatus">
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Notes</label>
+                            <textarea class="form-control" id="contactNotes" rows="2"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-gradient" id="saveContact">Save Contact</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(function () {
+        loadContacts();
+
+        // ─ Load Contacts ─
+        function loadContacts() {
+            $.get('/api/contacts', function (data) {
+                renderContacts(data);
+            });
+        }
+
+        function renderContacts(contacts) {
+            const search = $('#contactSearch').val().toLowerCase();
+            const status = $('#contactStatusFilter').val();
+            let filtered = contacts.filter(c => {
+                let match = true;
+                if (search) match = match && (c.name.toLowerCase().includes(search) || c.email.toLowerCase().includes(search) || (c.company || '').toLowerCase().includes(search));
+                if (status) match = match && c.status === status;
+                return match;
+            });
+            $('#contactCount').text(filtered.length + ' contact' + (filtered.length !== 1 ? 's' : ''));
+            if (filtered.length === 0) {
+                $('#contactsBody').html('<tr><td colspan="7" class="text-center text-muted py-5">No contacts found</td></tr>');
+                return;
+            }
+            let html = '';
+            filtered.forEach(c => {
+                html += `<tr>
+                <td><div class="d-flex align-items-center gap-2">
+                    <div class="table-avatar" style="background:linear-gradient(135deg,#7c3aed,#a855f7)">${c.name[0].toUpperCase()}</div>
+                    <strong>${c.name}</strong>
+                </div></td>
+                <td>${c.email}</td>
+                <td>${c.phone || '—'}</td>
+                <td>${c.company || '—'}</td>
+                <td>${c.position || '—'}</td>
+                <td><span class="badge bg-${c.status === 'active' ? 'success' : 'secondary'}">${c.status}</span></td>
+                <td class="text-end">
+                    <button class="btn btn-sm btn-outline-info me-1 edit-contact" data-id="${c.id}" title="Edit"><i class="bi bi-pencil-fill"></i></button>
+                    <button class="btn btn-sm btn-outline-danger delete-contact" data-id="${c.id}" title="Delete"><i class="bi bi-trash-fill"></i></button>
+                </td>
+            </tr>`;
+            });
+            $('#contactsBody').html(html);
+        }
+
+        // ─ Search & Filter ─
+        let allContacts = [];
+        $.get('/api/contacts', d => { allContacts = d; renderContacts(d); });
+        $('#contactSearch, #contactStatusFilter').on('input change', function () {
+            renderContacts(allContacts);
+        });
+
+        // ─ Save Contact ─
+        $('#saveContact').click(function () {
+            const id = $('#contactId').val();
+            const data = {
+                name: $('#contactName').val(),
+                email: $('#contactEmail').val(),
+                phone: $('#contactPhone').val(),
+                company: $('#contactCompany').val(),
+                position: $('#contactPosition').val(),
+                status: $('#contactStatus').val(),
+                notes: $('#contactNotes').val()
+            };
+            const url = id ? `/api/contacts/${id}` : '/api/contacts';
+            const method = id ? 'PUT' : 'POST';
+            $.ajax({
+                url, method,
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function () {
+                    $('#contactModal').modal('hide');
+                    showToast(id ? 'Contact updated!' : 'Contact created!', 'success');
+                    $.get('/api/contacts', d => { allContacts = d; renderContacts(d); });
+                }, error: function (xhr) {
+                    showToast('Error: ' + (xhr.responseJSON?.detail || 'Something went wrong'), 'danger');
+                }
+            });
+        });
+
+        // ─ Edit Contact ─
+        $(document).on('click', '.edit-contact', function () {
+            const id = $(this).data('id');
+            $.get(`/api/contacts/${id}`, function (c) {
+                $('#contactModalTitle').html('<i class="bi bi-pencil-fill"></i> Edit Contact');
+                $('#contactId').val(c.id);
+                $('#contactName').val(c.name);
+                $('#contactEmail').val(c.email);
+                $('#contactPhone').val(c.phone);
+                $('#contactCompany').val(c.company);
+                $('#contactPosition').val(c.position);
+                $('#contactStatus').val(c.status);
+                $('#contactNotes').val(c.notes);
+                $('#contactModal').modal('show');
+            });
+        });
+
+        // ─ Delete Contact ─
+        $(document).on('click', '.delete-contact', function () {
+            const id = $(this).data('id');
+            if (confirm('Delete this contact?')) {
+                $.ajax({
+                    url: `/api/contacts/${id}`, method: 'DELETE', success: function () {
+                        showToast('Contact deleted!', 'warning');
+                        $.get('/api/contacts', d => { allContacts = d; renderContacts(d); });
+                    }
+                });
+            }
+        });
+
+        // ─ Reset modal on open ─
+        $('#contactModal').on('hidden.bs.modal', function () {
+            $('#contactForm')[0].reset();
+            $('#contactId').val('');
+            $('#contactModalTitle').html('<i class="bi bi-person-plus-fill"></i> Add Contact');
+        });
+    });
+</script>
+{% endblock %}

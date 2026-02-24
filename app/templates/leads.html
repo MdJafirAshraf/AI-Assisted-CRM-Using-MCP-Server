@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+{% block title %}Leads{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title"><i class="bi bi-funnel-fill"></i> Leads</h1>
+        <p class="page-subtitle">Track and nurture your sales leads</p>
+    </div>
+    <button class="btn btn-gradient" id="btnAddLead" data-bs-toggle="modal" data-bs-target="#leadModal">
+        <i class="bi bi-plus-lg"></i> Add Lead
+    </button>
+</div>
+
+<!-- Filters -->
+<div class="glass-card mb-4">
+    <div class="card-body-custom d-flex gap-3 align-items-center flex-wrap">
+        <div class="input-group" style="max-width:300px;">
+            <span class="input-group-text bg-transparent border-secondary"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control bg-transparent border-secondary" id="leadSearch"
+                placeholder="Search leads...">
+        </div>
+        <select class="form-select bg-transparent border-secondary" style="max-width:160px;" id="leadStatusFilter">
+            <option value="">All Status</option>
+            <option value="new">New</option>
+            <option value="contacted">Contacted</option>
+            <option value="qualified">Qualified</option>
+            <option value="lost">Lost</option>
+        </select>
+        <select class="form-select bg-transparent border-secondary" style="max-width:160px;" id="leadSourceFilter">
+            <option value="">All Sources</option>
+            <option value="website">Website</option>
+            <option value="referral">Referral</option>
+            <option value="social">Social</option>
+            <option value="email">Email</option>
+            <option value="other">Other</option>
+        </select>
+        <span class="ms-auto text-muted" id="leadCount">0 leads</span>
+    </div>
+</div>
+
+<!-- Leads Table -->
+<div class="glass-card">
+    <div class="card-body-custom p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="leadsTable">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Company</th>
+                        <th>Source</th>
+                        <th>Value</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="leadsBody">
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-5">Loading leads...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ Lead Modal ═══ -->
+<div class="modal fade" id="leadModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content glass-modal">
+            <div class="modal-header border-0">
+                <h5 class="modal-title" id="leadModalTitle"><i class="bi bi-funnel-fill"></i> Add Lead</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="leadForm">
+                    <input type="hidden" id="leadId">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Name *</label>
+                            <input type="text" class="form-control" id="leadName" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" id="leadEmail">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Company</label>
+                            <input type="text" class="form-control" id="leadCompany">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Source</label>
+                            <select class="form-select" id="leadSource">
+                                <option value="website">Website</option>
+                                <option value="referral">Referral</option>
+                                <option value="social">Social</option>
+                                <option value="email">Email</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Value ($)</label>
+                            <input type="number" class="form-control" id="leadValue" min="0" step="0.01" value="0">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" id="leadStatus">
+                                <option value="new">New</option>
+                                <option value="contacted">Contacted</option>
+                                <option value="qualified">Qualified</option>
+                                <option value="lost">Lost</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Notes</label>
+                            <textarea class="form-control" id="leadNotes" rows="2"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-gradient" id="saveLead">Save Lead</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(function () {
+        let allLeads = [];
+
+        function loadLeads() {
+            $.get('/api/leads', function (data) {
+                allLeads = data;
+                renderLeads(data);
+            });
+        }
+        loadLeads();
+
+        function renderLeads(leads) {
+            const search = $('#leadSearch').val().toLowerCase();
+            const status = $('#leadStatusFilter').val();
+            const source = $('#leadSourceFilter').val();
+            let filtered = leads.filter(l => {
+                let m = true;
+                if (search) m = m && (l.name.toLowerCase().includes(search) || (l.email || '').toLowerCase().includes(search) || (l.company || '').toLowerCase().includes(search));
+                if (status) m = m && l.status === status;
+                if (source) m = m && l.source === source;
+                return m;
+            });
+            $('#leadCount').text(filtered.length + ' lead' + (filtered.length !== 1 ? 's' : ''));
+            if (filtered.length === 0) {
+                $('#leadsBody').html('<tr><td colspan="7" class="text-center text-muted py-5">No leads found</td></tr>');
+                return;
+            }
+            const statusColors = { new: 'info', contacted: 'warning', qualified: 'success', lost: 'danger' };
+            const sourceIcons = { website: 'bi-globe', referral: 'bi-person-lines-fill', social: 'bi-share-fill', email: 'bi-envelope-fill', other: 'bi-three-dots' };
+            let html = '';
+            filtered.forEach(l => {
+                html += `<tr>
+                <td><div class="d-flex align-items-center gap-2">
+                    <div class="table-avatar" style="background:linear-gradient(135deg,#3b82f6,#60a5fa)">${l.name[0].toUpperCase()}</div>
+                    <strong>${l.name}</strong>
+                </div></td>
+                <td>${l.email || '—'}</td>
+                <td>${l.company || '—'}</td>
+                <td><span class="badge bg-secondary"><i class="bi ${sourceIcons[l.source] || 'bi-three-dots'}"></i> ${l.source}</span></td>
+                <td class="fw-semibold text-success">$${Number(l.value).toLocaleString()}</td>
+                <td><span class="badge bg-${statusColors[l.status] || 'secondary'}">${l.status}</span></td>
+                <td class="text-end">
+                    <button class="btn btn-sm btn-outline-info me-1 edit-lead" data-id="${l.id}"><i class="bi bi-pencil-fill"></i></button>
+                    <button class="btn btn-sm btn-outline-danger delete-lead" data-id="${l.id}"><i class="bi bi-trash-fill"></i></button>
+                </td>
+            </tr>`;
+            });
+            $('#leadsBody').html(html);
+        }
+
+        $('#leadSearch, #leadStatusFilter, #leadSourceFilter').on('input change', () => renderLeads(allLeads));
+
+        $('#saveLead').click(function () {
+            const id = $('#leadId').val();
+            const data = {
+                name: $('#leadName').val(), email: $('#leadEmail').val(),
+                company: $('#leadCompany').val(), source: $('#leadSource').val(),
+                value: parseFloat($('#leadValue').val()) || 0, status: $('#leadStatus').val(),
+                notes: $('#leadNotes').val()
+            };
+            $.ajax({
+                url: id ? `/api/leads/${id}` : '/api/leads',
+                method: id ? 'PUT' : 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: () => {
+                    $('#leadModal').modal('hide');
+                    showToast(id ? 'Lead updated!' : 'Lead created!', 'success');
+                    loadLeads();
+                }, error: xhr => showToast('Error: ' + (xhr.responseJSON?.detail || 'Something went wrong'), 'danger')
+            });
+        });
+
+        $(document).on('click', '.edit-lead', function () {
+            const id = $(this).data('id');
+            $.get(`/api/leads/${id}`, function (l) {
+                $('#leadModalTitle').html('<i class="bi bi-pencil-fill"></i> Edit Lead');
+                $('#leadId').val(l.id);
+                $('#leadName').val(l.name); $('#leadEmail').val(l.email);
+                $('#leadCompany').val(l.company); $('#leadSource').val(l.source);
+                $('#leadValue').val(l.value); $('#leadStatus').val(l.status);
+                $('#leadNotes').val(l.notes);
+                $('#leadModal').modal('show');
+            });
+        });
+
+        $(document).on('click', '.delete-lead', function () {
+            if (confirm('Delete this lead?')) {
+                $.ajax({
+                    url: `/api/leads/${$(this).data('id')}`, method: 'DELETE', success: () => {
+                        showToast('Lead deleted!', 'warning'); loadLeads();
+                    }
+                });
+            }
+        });
+
+        $('#leadModal').on('hidden.bs.modal', () => {
+            $('#leadForm')[0].reset(); $('#leadId').val('');
+            $('#leadModalTitle').html('<i class="bi bi-funnel-fill"></i> Add Lead');
+        });
+    });
+</script>
+{% endblock %}
