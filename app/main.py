@@ -1,19 +1,21 @@
+import os
+from sqlalchemy.orm import Session
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastmcp import FastMCP
 
-from sqlalchemy.orm import Session
-from contextlib import asynccontextmanager
-import os
-
+from app.models.leads import Lead
+from app.models.deals import Deal
+from app.models.tasks import Task
+from app.models.contacts import Contact
 from app.database import engine, Base, SessionLocal
-from app.models import Contact, Lead, Deal, Task
-from app.routes import contacts, leads, deals, tasks
-from app.routes import chat
+from app.routes import contacts, leads, deals, tasks, chat
 
 
+# Lifespan for FastAPI app
 @asynccontextmanager
 async def app_lifespan(app: FastAPI):
     # Startup: Create database tables
@@ -111,9 +113,7 @@ def dashboard_api():
 
 # Convert to MCP server
 mcp = FastMCP.from_fastapi(app=app)
-
-# Create ASGI app from MCP server
-mcp_app = mcp.http_app(path='/mcp')
+mcp_app = mcp.http_app(path='/mcp') # Create ASGI app from MCP server
 
 # mount MCP app to FastAPI app
 app.mount("/llm", mcp_app)

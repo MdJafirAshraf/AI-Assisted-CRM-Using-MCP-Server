@@ -1,9 +1,14 @@
 fastapi
+fastmcp
 uvicorn[standard]
 sqlalchemy
 jinja2
 python-multipart
-fastapi-mcp
 httpx
-google-genai
 python-dotenv
+redis==5.0.4
+
+langchain
+langchain-core
+langchain-mcp-adapters
+langchain-groq
