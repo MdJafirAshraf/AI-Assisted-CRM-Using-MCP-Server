@@ -3,8 +3,8 @@ from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import Task
-from app.schemas import TaskCreate, TaskUpdate
+from app.models.tasks import Task
+from app.schemas.tasks import TaskCreate, TaskUpdate
 
 router = APIRouter(tags=["Tasks"])
 

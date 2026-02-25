@@ -3,8 +3,8 @@ from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import Deal
-from app.schemas import DealCreate, DealUpdate
+from app.models.deals import Deal
+from app.schemas.deals import DealCreate, DealUpdate
 
 router = APIRouter(tags=["Deals"])
 

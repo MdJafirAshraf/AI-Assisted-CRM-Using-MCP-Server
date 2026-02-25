@@ -3,8 +3,8 @@ from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import Lead
-from app.schemas import LeadCreate, LeadUpdate
+from app.models.leads import Lead
+from app.schemas.leads import LeadCreate, LeadUpdate
 
 router = APIRouter(tags=["Leads"])
 
