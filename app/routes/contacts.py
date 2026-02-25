@@ -6,7 +6,7 @@ from app.database import get_db
 from app.models import Contact
 from app.schemas import ContactCreate, ContactUpdate
 
-router = APIRouter()
+router = APIRouter(tags=["Contacts"])
 
 
 #  HTML Page 
@@ -16,14 +16,14 @@ def contacts_page(request: Request):
 
 
 #  API Endpoints 
-@router.get("/api/contacts", summary="List all contacts", tags=["Contacts"], operation_id="list_contacts")
+@router.get("/api/contacts", summary="List all contacts")
 def list_contacts(db: Session = Depends(get_db)):
     """Retrieve all contacts from the CRM database."""
     contacts = db.query(Contact).order_by(Contact.created_at.desc()).all()
     return [c.to_dict() for c in contacts]
 
 
-@router.get("/api/contacts/{contact_id}", summary="Get a contact", tags=["Contacts"], operation_id="get_contact")
+@router.get("/api/contacts/{contact_id}", summary="Get a contact")
 def get_contact(contact_id: int, db: Session = Depends(get_db)):
     """Retrieve a single contact by ID."""
     contact = db.query(Contact).filter(Contact.id == contact_id).first()
@@ -32,7 +32,7 @@ def get_contact(contact_id: int, db: Session = Depends(get_db)):
     return contact.to_dict()
 
 
-@router.post("/api/contacts", summary="Create a contact", tags=["Contacts"], operation_id="create_contact")
+@router.post("/api/contacts", summary="Create a contact")
 def create_contact(
     data: ContactCreate,
     db: Session = Depends(get_db),

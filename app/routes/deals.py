@@ -6,7 +6,7 @@ from app.database import get_db
 from app.models import Deal
 from app.schemas import DealCreate, DealUpdate
 
-router = APIRouter()
+router = APIRouter(tags=["Deals"])
 
 
 #  HTML Page 
@@ -16,14 +16,14 @@ def deals_page(request: Request):
 
 
 #  API Endpoints 
-@router.get("/api/deals", summary="List all deals", tags=["Deals"])
+@router.get("/api/deals", summary="List all deals")
 def list_deals(db: Session = Depends(get_db)):
     """Retrieve all deals from the CRM database."""
     deals = db.query(Deal).order_by(Deal.created_at.desc()).all()
     return [d.to_dict() for d in deals]
 
 
-@router.get("/api/deals/{deal_id}", summary="Get a deal", tags=["Deals"])
+@router.get("/api/deals/{deal_id}", summary="Get a deal")
 def get_deal(deal_id: int, db: Session = Depends(get_db)):
     """Retrieve a single deal by ID."""
     deal = db.query(Deal).filter(Deal.id == deal_id).first()
@@ -32,7 +32,7 @@ def get_deal(deal_id: int, db: Session = Depends(get_db)):
     return deal.to_dict()
 
 
-@router.post("/api/deals", summary="Create a deal", tags=["Deals"])
+@router.post("/api/deals", summary="Create a deal")
 def create_deal(
     data: DealCreate,
     db: Session = Depends(get_db),
@@ -53,7 +53,7 @@ def create_deal(
     return deal.to_dict()
 
 
-@router.put("/api/deals/{deal_id}", summary="Update a deal", tags=["Deals"])
+@router.put("/api/deals/{deal_id}", summary="Update a deal")
 def update_deal(
     deal_id: int,
     data: DealUpdate,
@@ -73,7 +73,7 @@ def update_deal(
     return deal.to_dict()
 
 
-@router.delete("/api/deals/{deal_id}", summary="Delete a deal", tags=["Deals"])
+@router.delete("/api/deals/{deal_id}", summary="Delete a deal")
 def delete_deal(deal_id: int, db: Session = Depends(get_db)):
     """Delete a deal from the CRM by ID."""
     deal = db.query(Deal).filter(Deal.id == deal_id).first()

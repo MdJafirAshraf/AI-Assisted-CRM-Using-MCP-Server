@@ -6,7 +6,7 @@ from app.database import get_db
 from app.models import Task
 from app.schemas import TaskCreate, TaskUpdate
 
-router = APIRouter()
+router = APIRouter(tags=["Tasks"])
 
 
 #  HTML Page 
@@ -16,14 +16,14 @@ def tasks_page(request: Request):
 
 
 #  API Endpoints 
-@router.get("/api/tasks", summary="List all tasks", tags=["Tasks"])
+@router.get("/api/tasks", summary="List all tasks")
 def list_tasks(db: Session = Depends(get_db)):
     """Retrieve all tasks from the CRM database."""
     tasks = db.query(Task).order_by(Task.created_at.desc()).all()
     return [t.to_dict() for t in tasks]
 
 
-@router.get("/api/tasks/{task_id}", summary="Get a task", tags=["Tasks"])
+@router.get("/api/tasks/{task_id}", summary="Get a task")
 def get_task(task_id: int, db: Session = Depends(get_db)):
     """Retrieve a single task by ID."""
     task = db.query(Task).filter(Task.id == task_id).first()
@@ -32,7 +32,7 @@ def get_task(task_id: int, db: Session = Depends(get_db)):
     return task.to_dict()
 
 
-@router.post("/api/tasks", summary="Create a task", tags=["Tasks"])
+@router.post("/api/tasks", summary="Create a task")
 def create_task(
     data: TaskCreate,
     db: Session = Depends(get_db),
@@ -53,7 +53,7 @@ def create_task(
     return task.to_dict()
 
 
-@router.put("/api/tasks/{task_id}", summary="Update a task", tags=["Tasks"])
+@router.put("/api/tasks/{task_id}", summary="Update a task")
 def update_task(
     task_id: int,
     data: TaskUpdate,
@@ -73,7 +73,7 @@ def update_task(
     return task.to_dict()
 
 
-@router.delete("/api/tasks/{task_id}", summary="Delete a task", tags=["Tasks"])
+@router.delete("/api/tasks/{task_id}", summary="Delete a task")
 def delete_task(task_id: int, db: Session = Depends(get_db)):
     """Delete a task from the CRM by ID."""
     task = db.query(Task).filter(Task.id == task_id).first()

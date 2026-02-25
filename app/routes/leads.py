@@ -6,7 +6,7 @@ from app.database import get_db
 from app.models import Lead
 from app.schemas import LeadCreate, LeadUpdate
 
-router = APIRouter()
+router = APIRouter(tags=["Leads"])
 
 
 #  HTML Page 
@@ -16,14 +16,14 @@ def leads_page(request: Request):
 
 
 #  API Endpoints 
-@router.get("/api/leads", summary="List all leads", tags=["Leads"])
+@router.get("/api/leads", summary="List all leads")
 def list_leads(db: Session = Depends(get_db)):
     """Retrieve all leads from the CRM database."""
     leads = db.query(Lead).order_by(Lead.created_at.desc()).all()
     return [l.to_dict() for l in leads]
 
 
-@router.get("/api/leads/{lead_id}", summary="Get a lead", tags=["Leads"])
+@router.get("/api/leads/{lead_id}", summary="Get a lead")
 def get_lead(lead_id: int, db: Session = Depends(get_db)):
     """Retrieve a single lead by ID."""
     lead = db.query(Lead).filter(Lead.id == lead_id).first()
@@ -32,7 +32,7 @@ def get_lead(lead_id: int, db: Session = Depends(get_db)):
     return lead.to_dict()
 
 
-@router.post("/api/leads", summary="Create a lead", tags=["Leads"])
+@router.post("/api/leads", summary="Create a lead")
 def create_lead(
     data: LeadCreate,
     db: Session = Depends(get_db),
@@ -53,7 +53,7 @@ def create_lead(
     return lead.to_dict()
 
 
-@router.put("/api/leads/{lead_id}", summary="Update a lead", tags=["Leads"])
+@router.put("/api/leads/{lead_id}", summary="Update a lead")
 def update_lead(
     lead_id: int,
     data: LeadUpdate,
@@ -73,7 +73,7 @@ def update_lead(
     return lead.to_dict()
 
 
-@router.delete("/api/leads/{lead_id}", summary="Delete a lead", tags=["Leads"])
+@router.delete("/api/leads/{lead_id}", summary="Delete a lead")
 def delete_lead(lead_id: int, db: Session = Depends(get_db)):
     """Delete a lead from the CRM by ID."""
     lead = db.query(Lead).filter(Lead.id == lead_id).first()

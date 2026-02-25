@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 from app.chatbot import process_chat_message
 
-router = APIRouter()
+router = APIRouter(tags=["Chatbot"])
 
 
 class ChatRequest(BaseModel):
@@ -14,7 +14,7 @@ class ChatResponse(BaseModel):
     reply: str
 
 
-@router.post("/api/chat", summary="Chat with CRM AI assistant", tags=["Chatbot"], response_model=ChatResponse)
+@router.post("/api/chat", summary="Chat with CRM AI assistant", response_model=ChatResponse)
 async def chat_endpoint(payload: ChatRequest, request: Request):
     """
     Send a natural-language message to the CRM chatbot.
