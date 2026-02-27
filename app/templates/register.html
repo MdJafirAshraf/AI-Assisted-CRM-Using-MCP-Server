@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Register User{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">
+            <i class="bi bi-person-plus-fill"></i> Register New User
+        </h1>
+        <p class="page-subtitle">Create a new user account for the CRM</p>
+    </div>
+    <a href="/users" class="btn btn-gradient">
+        <i class="bi bi-arrow-left me-2"></i>Back to Users
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+        <div class="glass-card">
+            <div class="card-body-custom" style="padding: 32px;">
+                <!-- Alert -->
+                <div class="alert alert-danger d-none" id="registerError" role="alert">
+                    <i class="bi bi-exclamation-circle-fill me-2"></i>
+                    <span id="registerErrorText"></span>
+                </div>
+                <div class="alert alert-success d-none" id="registerSuccess" role="alert">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    <span id="registerSuccessText"></span>
+                </div>
+
+                <form id="registerForm">
+                    <div class="mb-3">
+                        <label for="regUsername" class="form-label">Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-person"></i></span>
+                            <input type="text" class="form-control" id="regUsername" placeholder="Enter username"
+                                required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="regEmail" class="form-label">Email Address</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                            <input type="email" class="form-control" id="regEmail" placeholder="Enter email" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="regPassword" class="form-label">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                            <input type="password" class="form-control" id="regPassword" placeholder="Enter password"
+                                required minlength="6">
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="regRole" class="form-label">Role</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-shield"></i></span>
+                            <select class="form-select" id="regRole">
+                                <option value="user" selected>User</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-gradient w-100" id="btnRegister">
+                        <i class="bi bi-person-plus me-2"></i>Create Account
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.getElementById('registerForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const btn = document.getElementById('btnRegister');
+        const errorDiv = document.getElementById('registerError');
+        const successDiv = document.getElementById('registerSuccess');
+
+        const data = {
+            username: document.getElementById('regUsername').value.trim(),
+            email: document.getElementById('regEmail').value.trim(),
+            password: document.getElementById('regPassword').value,
+            role: document.getElementById('regRole').value,
+        };
+
+        if (!data.username || !data.email || !data.password) return;
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating...';
+        errorDiv.classList.add('d-none');
+        successDiv.classList.add('d-none');
+
+        try {
+            const response = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                document.getElementById('registerSuccessText').textContent =
+                    `User "${result.user.username}" created successfully!`;
+                successDiv.classList.remove('d-none');
+                this.reset();
+            } else {
+                document.getElementById('registerErrorText').textContent = result.detail || 'Failed to create user';
+                errorDiv.classList.remove('d-none');
+            }
+        } catch (err) {
+            document.getElementById('registerErrorText').textContent = 'Network error. Please try again.';
+            errorDiv.classList.remove('d-none');
+        }
+
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-person-plus me-2"></i>Create Account';
+    });
+</script>
+{% endblock %}
