@@ -1056,3 +1056,145 @@ body {
     padding: 0 16px;
   }
 }
+
+/* ═══ User Dropdown ═══ */
+.user-dropdown-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px 6px 6px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.02);
+  cursor: pointer;
+  transition: var(--transition);
+  text-decoration: none;
+  color: var(--text-primary);
+}
+
+.user-dropdown-btn:hover {
+  background: rgba(124, 58, 237, 0.06);
+  border-color: rgba(124, 58, 237, 0.2);
+}
+
+.user-avatar-sm {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--gradient-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  color: white;
+  flex-shrink: 0;
+}
+
+.user-dropdown-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.user-dropdown-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.user-dropdown-role {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.user-dropdown-btn .bi-chevron-down {
+  font-size: 11px;
+  color: var(--text-secondary);
+  transition: transform 0.2s;
+}
+
+.user-dropdown-btn[aria-expanded="true"] .bi-chevron-down {
+  transform: rotate(180deg);
+}
+
+.user-dropdown-menu {
+  min-width: 240px;
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  background: var(--bg-secondary);
+  margin-top: 8px !important;
+}
+
+.user-dropdown-menu .dropdown-header {
+  padding: 12px;
+  font-size: 14px;
+}
+
+.user-dropdown-menu .dropdown-item {
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  transition: var(--transition);
+}
+
+.user-dropdown-menu .dropdown-item:hover {
+  background: rgba(124, 58, 237, 0.06);
+}
+
+.user-dropdown-menu .dropdown-item.text-danger:hover {
+  background: rgba(239, 68, 68, 0.08);
+}
+
+/* ═══ Role Badges ═══ */
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.role-badge-admin {
+  background: rgba(124, 58, 237, 0.1);
+  color: #7c3aed;
+  border: 1px solid rgba(124, 58, 237, 0.2);
+}
+
+.role-badge-user {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+/* Badge variants for user management table */
+.bg-purple-subtle {
+  background: rgba(124, 58, 237, 0.12) !important;
+}
+
+.text-purple {
+  color: #7c3aed !important;
+}
+
+.bg-blue-subtle {
+  background: rgba(59, 130, 246, 0.12) !important;
+}
+
+.text-blue {
+  color: #3b82f6 !important;
+}
+
+/* ═══ Sidebar Section Label ═══ */
+.sidebar-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-secondary);
+  padding: 8px 16px 4px;
+  opacity: 0.7;
+}
