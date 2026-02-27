@@ -6,6 +6,9 @@ jinja2
 python-multipart
 httpx
 python-dotenv
+python-jose[cryptography]
+passlib[bcrypt]
+bcrypt==4.0.1
 redis==5.0.4
 
 langchain
