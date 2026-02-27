@@ -1,18 +1,33 @@
 import os
 from sqlalchemy.orm import Session
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Depends
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse
+from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
+from fastapi.middleware.cors import CORSMiddleware
 from fastmcp import FastMCP
-
-from app.models.leads import Lead
-from app.models.deals import Deal
-from app.models.tasks import Task
-from app.models.contacts import Contact
+import httpx
+from fastmcp.server.dependencies import get_http_request
+from app.models.users import User
 from app.database import engine, Base, SessionLocal
-from app.routes import contacts, leads, deals, tasks, chat
+from app.routes.routes import router
+from app.security import get_current_user, hash_password
+
+
+def seed_admin(db: Session):
+    """Create default admin account if no users exist."""
+    if db.query(User).count() == 0:
+        admin = User(
+            username="Admin",
+            email="admin@crm.com",
+            hashed_password=hash_password("admin123"),
+            role="admin",
+            is_active=True,
+        )
+        db.add(admin)
+        db.commit()
+        print("✅  Default admin created (admin@crm.com / admin123)")
 
 
 # Lifespan for FastAPI app
@@ -20,6 +35,12 @@ from app.routes import contacts, leads, deals, tasks, chat
 async def app_lifespan(app: FastAPI):
     # Startup: Create database tables
     Base.metadata.create_all(bind=engine)
+    # Seed default admin
+    db = SessionLocal()
+    try:
+        seed_admin(db)
+    finally:
+        db.close()
     yield
     # Shutdown: Nothing to clean up for now
     pass
@@ -38,6 +59,15 @@ app = FastAPI(
     lifespan=combined_lifespan
 )
 
+# app middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+    allow_credentials=True,
+)
+
 #  Static & Templates 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
@@ -46,75 +76,48 @@ templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 app.state.templates = templates
 
 #  Include Routers
-app.include_router(contacts.router)
-app.include_router(leads.router)
-app.include_router(deals.router)
-app.include_router(tasks.router)
-app.include_router(chat.router)
+app.include_router(router, tags=["API Endpoints"])
 
 
-#  Dashboard
-@app.get("/", response_class=HTMLResponse, include_in_schema=False)
-def dashboard(request: Request):
-    db: Session = SessionLocal()
-    try:
-        stats = {
-            "total_contacts": db.query(Contact).count(),
-            "active_contacts": db.query(Contact).filter(Contact.status == "active").count(),
-            "total_leads": db.query(Lead).count(),
-            "new_leads": db.query(Lead).filter(Lead.status == "new").count(),
-            "qualified_leads": db.query(Lead).filter(Lead.status == "qualified").count(),
-            "total_deals": db.query(Deal).count(),
-            "won_deals": db.query(Deal).filter(Deal.stage == "won").count(),
-            "total_deal_value": db.query(Deal).with_entities(
-                __import__('sqlalchemy').func.coalesce(__import__('sqlalchemy').func.sum(Deal.value), 0)
-            ).scalar(),
-            "total_tasks": db.query(Task).count(),
-            "pending_tasks": db.query(Task).filter(Task.status != "done").count(),
-            "recent_contacts": [c.to_dict() for c in db.query(Contact).order_by(Contact.created_at.desc()).limit(5).all()],
-            "recent_leads": [l.to_dict() for l in db.query(Lead).order_by(Lead.created_at.desc()).limit(5).all()],
-            "recent_deals": [d.to_dict() for d in db.query(Deal).order_by(Deal.created_at.desc()).limit(5).all()],
-            "deals_by_stage": {
-                "discovery": db.query(Deal).filter(Deal.stage == "discovery").count(),
-                "proposal": db.query(Deal).filter(Deal.stage == "proposal").count(),
-                "negotiation": db.query(Deal).filter(Deal.stage == "negotiation").count(),
-                "won": db.query(Deal).filter(Deal.stage == "won").count(),
-                "lost": db.query(Deal).filter(Deal.stage == "lost").count(),
-            },
-        }
-    finally:
-        db.close()
-    return templates.TemplateResponse("dashboard.html", {"request": request, "stats": stats})
+# ═══ Auth Exception Handler ═══
+# Redirect 401 errors on HTML page requests to the login page
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from fastapi.responses import JSONResponse
+
+@app.exception_handler(StarletteHTTPException)
+async def custom_http_exception_handler(request: Request, exc: StarletteHTTPException):
+    if exc.status_code == 401:
+        # If it's a page request (not API), redirect to login
+        accept = request.headers.get("accept", "")
+        if "text/html" in accept and not request.url.path.startswith("/api/"):
+            return RedirectResponse(url="/", status_code=302)
+    if exc.status_code == 403:
+        accept = request.headers.get("accept", "")
+        if "text/html" in accept and not request.url.path.startswith("/api/"):
+            return RedirectResponse(url="/", status_code=302)
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail},
+    )
 
 
-#  Dashboard API
-@app.get("/api/dashboard", summary="Get dashboard stats", tags=["Dashboard"])
-def dashboard_api():
-    """Retrieve summary statistics for the CRM dashboard."""
-    db: Session = SessionLocal()
-    try:
-        from sqlalchemy import func
-        stats = {
-            "total_contacts": db.query(Contact).count(),
-            "active_contacts": db.query(Contact).filter(Contact.status == "active").count(),
-            "total_leads": db.query(Lead).count(),
-            "new_leads": db.query(Lead).filter(Lead.status == "new").count(),
-            "total_deals": db.query(Deal).count(),
-            "won_deals": db.query(Deal).filter(Deal.stage == "won").count(),
-            "total_deal_value": db.query(func.coalesce(func.sum(Deal.value), 0)).scalar(),
-            "total_tasks": db.query(Task).count(),
-            "pending_tasks": db.query(Task).filter(Task.status != "done").count(),
-        }
-    finally:
-        db.close()
-    return stats
-
-
+class MCPForwardAuth(httpx.Auth):
+    def auth_flow(self, request):
+        try:
+            req = get_http_request()
+            auth = req.headers.get("Authorization")
+            if auth:
+                request.headers["Authorization"] = auth
+        except Exception:
+            pass
+        yield request
 
 # Convert to MCP server
-mcp = FastMCP.from_fastapi(app=app)
+mcp = FastMCP.from_fastapi(
+    app=app,
+    httpx_client_kwargs={"auth": MCPForwardAuth()}
+) 
 mcp_app = mcp.http_app(path='/mcp') # Create ASGI app from MCP server
-
 # mount MCP app to FastAPI app
 app.mount("/llm", mcp_app)
 
