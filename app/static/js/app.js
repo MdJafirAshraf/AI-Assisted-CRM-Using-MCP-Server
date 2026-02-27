@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════
    CRM Hub – App JavaScript (jQuery)
-   Chatbot widget, toasts, sidebar toggle
+   Chatbot widget, toasts, sidebar toggle, auth
    ═══════════════════════════════════════════════════════════ */
 
 //  Toast Utility ─
@@ -28,6 +28,16 @@ function showToast(message, type = "info") {
   toastEl.addEventListener("hidden.bs.toast", () => toastEl.remove());
 }
 
+//  Global 401 Handler ─
+// Redirect to login on any AJAX 401 response
+$.ajaxSetup({
+  statusCode: {
+    401: function () {
+      window.location.href = "/";
+    },
+  },
+});
+
 //  Sidebar Toggle (Mobile) ─
 $(document).ready(function () {
   $("#sidebarToggle").click(function () {
@@ -42,6 +52,30 @@ $(document).ready(function () {
       }
     }
   });
+});
+
+//  Logout Handler ─
+$(document).ready(function () {
+  $("#logoutBtn").click(async function (e) {
+    e.preventDefault();
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch (err) {
+      // Ignore errors
+    }
+    window.location.href = "/";
+  });
+});
+
+//  Role-Based UI ─
+// Hide delete buttons for non-admin users
+$(document).ready(function () {
+  if (window.CRM_USER && window.CRM_USER.role !== "admin") {
+    // Hide delete buttons that might be rendered by page scripts
+    $(document).on("DOMNodeInserted", function () {
+      $(".btn-delete-admin-only").hide();
+    });
+  }
 });
 
 //  Chatbot Widget 
@@ -97,6 +131,9 @@ $(document).ready(function () {
       url: "/api/chat",
       method: "POST",
       contentType: "application/json",
+      xhrFields: {
+        withCredentials: true   // ✅ THIS is correct for jQuery
+      },
       data: JSON.stringify({ message: msg }),
       success: function (data) {
         $(`#${typingId}`).remove();
