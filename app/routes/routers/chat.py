@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, Request
 from app.models.users import User
 from app.schemas.chat import ChatRequest, ChatResponse
 from app.chatbot.llm_client import process_query
-from app.security import get_current_user
+from app.dependencies.auth import get_current_user
 
 
 router = APIRouter(tags=["Chatbot"])

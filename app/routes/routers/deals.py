@@ -2,11 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 
-from app.database import get_db
+from app.db import get_db
 from app.models.deals import Deal
 from app.models.users import User
 from app.schemas.deals import DealCreate, DealUpdate
-from app.security import get_current_user, require_admin
+from app.dependencies.auth import get_current_user
+from app.dependencies.permission import require_admin
 
 router = APIRouter(tags=["Deals"])
 

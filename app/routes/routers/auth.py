@@ -1,18 +1,19 @@
+import uuid
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
 
-from app.database import get_db
+from app.db import get_db
 from app.models.users import User
 from app.schemas.users import UserCreate, UserLogin
-from app.security import (
+from app.core.security import (
     hash_password,
     verify_password,
     create_access_token,
-    get_current_user,
-    get_current_user_optional,
-    require_admin,
+    decode_access_token
 )
+from app.dependencies.auth import get_current_user
+from app.dependencies.permission import require_admin
 
 router = APIRouter(tags=["Authentication"])
 
@@ -24,11 +25,10 @@ def login_page(request: Request):
     # If already logged in, redirect to dashboard
     user = None
     try:
-        from app.database import SessionLocal
+        from app.db import SessionLocal
         db = SessionLocal()
         token = request.cookies.get("access_token")
         if token:
-            from app.security import decode_access_token
             payload = decode_access_token(token)
             if payload and payload.get("sub"):
                 user = db.query(User).filter(User.id == payload.get("sub")).first()
@@ -69,8 +69,15 @@ def api_login(data: UserLogin, response: Response, db: Session = Depends(get_db)
         
     if not user.is_active:
         raise HTTPException(status_code=403, detail="Account is deactivated")
+    
+    user_data = {
+        "sub": user.id,
+        "username": user.username,
+        "user_id": user.user_id,
+        "role": user.role
+    }
 
-    token = create_access_token(data={"sub": user.id, "role": user.role})
+    token = create_access_token(data=user_data)
     response.set_cookie(
         key="access_token",
         value=token,
@@ -95,6 +102,7 @@ def api_register(
         raise HTTPException(status_code=400, detail="Username already taken")
 
     user = User(
+        user_id=str(uuid.uuid4()),
         username=data.username,
         email=data.email,
         hashed_password=hash_password(data.password),
