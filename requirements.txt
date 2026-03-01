@@ -1,6 +1,8 @@
 fastapi
 fastmcp
 uvicorn[standard]
+pydantic
+pydantic-settings
 sqlalchemy
 jinja2
 python-multipart
