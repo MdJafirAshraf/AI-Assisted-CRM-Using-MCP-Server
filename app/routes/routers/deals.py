@@ -9,7 +9,7 @@ from app.schemas.deals import DealCreate, DealUpdate
 from app.dependencies.auth import get_current_user
 from app.dependencies.permission import require_admin
 
-router = APIRouter(tags=["Deals"])
+router = APIRouter(tags=["Deals"], dependencies=[Depends(get_current_user)])
 
 
 #  HTML Page 
@@ -22,14 +22,14 @@ def deals_page(request: Request, current_user: User = Depends(get_current_user))
 
 #  API Endpoints 
 @router.get("/api/deals", summary="List all deals")
-def list_deals(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def list_deals(db: Session = Depends(get_db)):
     """Retrieve all deals from the CRM database."""
     deals = db.query(Deal).order_by(Deal.created_at.desc()).all()
     return [d.to_dict() for d in deals]
 
 
 @router.get("/api/deals/{deal_id}", summary="Get a deal")
-def get_deal(deal_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def get_deal(deal_id: int, db: Session = Depends(get_db)):
     """Retrieve a single deal by ID."""
     deal = db.query(Deal).filter(Deal.id == deal_id).first()
     if not deal:
@@ -38,11 +38,7 @@ def get_deal(deal_id: int, db: Session = Depends(get_db), current_user: User = D
 
 
 @router.post("/api/deals", summary="Create a deal")
-def create_deal(
-    data: DealCreate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
+def create_deal(data: DealCreate, db: Session = Depends(get_db)):
     """Create a new deal in the CRM."""
     deal = Deal(
         title=data.title,
@@ -60,12 +56,7 @@ def create_deal(
 
 
 @router.put("/api/deals/{deal_id}", summary="Update a deal")
-def update_deal(
-    deal_id: int,
-    data: DealUpdate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
+def update_deal(deal_id: int, data: DealUpdate, db: Session = Depends(get_db)):
     """Update an existing deal by ID."""
     deal = db.query(Deal).filter(Deal.id == deal_id).first()
     if not deal:
@@ -81,11 +72,7 @@ def update_deal(
 
 
 @router.delete("/api/deals/{deal_id}", summary="Delete a deal")
-def delete_deal(
-    deal_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_admin),
-):
+def delete_deal(deal_id: int, db: Session = Depends(get_db), current_user: User = Depends(require_admin)):
     """Delete a deal from the CRM by ID. Admin only."""
     deal = db.query(Deal).filter(Deal.id == deal_id).first()
     if not deal:

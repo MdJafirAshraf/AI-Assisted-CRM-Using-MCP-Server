@@ -9,7 +9,7 @@ from app.schemas.tasks import TaskCreate, TaskUpdate
 from app.dependencies.auth import get_current_user
 from app.dependencies.permission import require_admin
 
-router = APIRouter(tags=["Tasks"])
+router = APIRouter(tags=["Tasks"], dependencies=[Depends(get_current_user)])
 
 
 #  HTML Page 
@@ -22,14 +22,14 @@ def tasks_page(request: Request, current_user: User = Depends(get_current_user))
 
 #  API Endpoints 
 @router.get("/api/tasks", summary="List all tasks")
-def list_tasks(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def list_tasks(db: Session = Depends(get_db)):
     """Retrieve all tasks from the CRM database."""
     tasks = db.query(Task).order_by(Task.created_at.desc()).all()
     return [t.to_dict() for t in tasks]
 
 
 @router.get("/api/tasks/{task_id}", summary="Get a task")
-def get_task(task_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def get_task(task_id: int, db: Session = Depends(get_db)):
     """Retrieve a single task by ID."""
     task = db.query(Task).filter(Task.id == task_id).first()
     if not task:
@@ -38,11 +38,7 @@ def get_task(task_id: int, db: Session = Depends(get_db), current_user: User = D
 
 
 @router.post("/api/tasks", summary="Create a task")
-def create_task(
-    data: TaskCreate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
+def create_task(data: TaskCreate, db: Session = Depends(get_db)):
     """Create a new task in the CRM."""
     task = Task(
         title=data.title,
@@ -60,12 +56,7 @@ def create_task(
 
 
 @router.put("/api/tasks/{task_id}", summary="Update a task")
-def update_task(
-    task_id: int,
-    data: TaskUpdate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
+def update_task(task_id: int, data: TaskUpdate, db: Session = Depends(get_db)):
     """Update an existing task by ID."""
     task = db.query(Task).filter(Task.id == task_id).first()
     if not task:
@@ -81,11 +72,7 @@ def update_task(
 
 
 @router.delete("/api/tasks/{task_id}", summary="Delete a task")
-def delete_task(
-    task_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_admin),
-):
+def delete_task(task_id: int, db: Session = Depends(get_db), current_user: User = Depends(require_admin)):
     """Delete a task from the CRM by ID. Admin only."""
     task = db.query(Task).filter(Task.id == task_id).first()
     if not task:

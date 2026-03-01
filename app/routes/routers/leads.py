@@ -9,7 +9,7 @@ from app.schemas.leads import LeadCreate, LeadUpdate
 from app.dependencies.auth import get_current_user
 from app.dependencies.permission import require_admin
 
-router = APIRouter(tags=["Leads"])
+router = APIRouter(tags=["Leads"], dependencies=[Depends(get_current_user)])
 
 
 #  HTML Page 
@@ -22,14 +22,14 @@ def leads_page(request: Request, current_user: User = Depends(get_current_user))
 
 #  API Endpoints 
 @router.get("/api/leads", summary="List all leads")
-def list_leads(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def list_leads(db: Session = Depends(get_db)):
     """Retrieve all leads from the CRM database."""
     leads = db.query(Lead).order_by(Lead.created_at.desc()).all()
     return [l.to_dict() for l in leads]
 
 
 @router.get("/api/leads/{lead_id}", summary="Get a lead")
-def get_lead(lead_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def get_lead(lead_id: int, db: Session = Depends(get_db)):
     """Retrieve a single lead by ID."""
     lead = db.query(Lead).filter(Lead.id == lead_id).first()
     if not lead:
@@ -38,11 +38,7 @@ def get_lead(lead_id: int, db: Session = Depends(get_db), current_user: User = D
 
 
 @router.post("/api/leads", summary="Create a lead")
-def create_lead(
-    data: LeadCreate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
+def create_lead(data: LeadCreate, db: Session = Depends(get_db)):
     """Create a new lead in the CRM."""
     lead = Lead(
         name=data.name,
@@ -60,12 +56,7 @@ def create_lead(
 
 
 @router.put("/api/leads/{lead_id}", summary="Update a lead")
-def update_lead(
-    lead_id: int,
-    data: LeadUpdate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
+def update_lead(lead_id: int, data: LeadUpdate, db: Session = Depends(get_db)):
     """Update an existing lead by ID."""
     lead = db.query(Lead).filter(Lead.id == lead_id).first()
     if not lead:
@@ -81,11 +72,7 @@ def update_lead(
 
 
 @router.delete("/api/leads/{lead_id}", summary="Delete a lead")
-def delete_lead(
-    lead_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_admin),
-):
+def delete_lead(lead_id: int, db: Session = Depends(get_db), current_user: User = Depends(require_admin)):
     """Delete a lead from the CRM by ID. Admin only."""
     lead = db.query(Lead).filter(Lead.id == lead_id).first()
     if not lead:
