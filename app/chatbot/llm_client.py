@@ -3,6 +3,7 @@ from langchain.agents import create_agent
 from langchain_core.tools.base import ToolException
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langchain_core.messages import SystemMessage, HumanMessage
+from app.chatbot.cache_service import get_cached_response, set_cached_response
 from app.chatbot.handle_error import handle_tool_error
 from dotenv import load_dotenv
 
@@ -14,11 +15,20 @@ model = ChatGroq(
     temperature=0,
 )
 
-async def process_query(query: str, base_url: str, access_token: str = None) -> str:
+async def process_query(query: str, base_url: str, access_token: str, user_id: int) -> str:
     """
     Process query using MCP tools via LangChain agent.
     Instantiates a FRESH client per request to inject the correct Bearer token.
     """
+
+
+    # Check cache
+    cached = get_cached_response(user_id, query)
+    if cached:
+        print("⚡ Cache HIT")
+        return cached
+
+    print("🧠 Cache MISS → Calling LLM")
     
     # This dictionary is recreated for every single request
     connection_config = {
@@ -48,8 +58,13 @@ async def process_query(query: str, base_url: str, access_token: str = None) -> 
 
         # Invoke
         response = await agent.ainvoke({"messages": messages})
+        print("\nActual Response:", response)
+        
         final_response = response["messages"][-1].content
         print("\nFinal Response:", final_response)
+
+        # Store cache only if safe
+        set_cached_response(user_id, query, final_response)
 
         return final_response
     

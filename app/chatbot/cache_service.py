@@ -1,12 +1,21 @@
-import hashlib
-from app.chatbot.cache_service import redis_client
+import re, hashlib
+from app.chatbot.redis_client import redis_client, get_user_data_version
 
 CACHE_TTL = 60 * 60  # 1 hour
 
+def normalize_query(query: str) -> str:
+    query = query.lower().strip()
+    query = re.sub(r"\s+", " ", query)
+    query = re.sub(r"[^\w\s]", "", query)
+    return query
+
 
 def generate_cache_key(user_id: str, query: str) -> str:
-    query_hash = hashlib.sha256(query.encode()).hexdigest()
-    return f"chat:{user_id}:{query_hash}"
+    normalized = normalize_query(query)
+    query_hash = hashlib.sha256(normalized.encode()).hexdigest()
+    version = get_user_data_version(user_id)
+
+    return f"crm:chat:{user_id}:{version}:{query_hash}"
 
 
 def get_cached_response(user_id: str, query: str):
