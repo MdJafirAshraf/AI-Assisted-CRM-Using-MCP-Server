@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, Float, Text, DateTime, ForeignKe
 from sqlalchemy.orm import relationship
 from datetime import datetime
 
-from app.database import Base
+from app.db import Base
 
 
 class Task(Base):
