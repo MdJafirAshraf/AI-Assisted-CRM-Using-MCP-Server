@@ -1,4 +1,4 @@
-import os
+import os, uuid
 from sqlalchemy.orm import Session
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, Depends
@@ -10,15 +10,17 @@ from fastmcp import FastMCP
 import httpx
 from fastmcp.server.dependencies import get_http_request
 from app.models.users import User
-from app.database import engine, Base, SessionLocal
+from app.db import engine, Base, SessionLocal
 from app.routes.routes import router
-from app.security import get_current_user, hash_password
+from app.dependencies.auth import get_current_user
+from app.core.security import hash_password
 
 
 def seed_admin(db: Session):
     """Create default admin account if no users exist."""
     if db.query(User).count() == 0:
         admin = User(
+            user_id=uuid.uuid4().int >> 64, 
             username="Admin",
             email="admin@crm.com",
             hashed_password=hash_password("admin123"),
