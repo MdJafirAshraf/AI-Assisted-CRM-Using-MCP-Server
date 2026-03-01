@@ -10,11 +10,7 @@ router = APIRouter(tags=["Chatbot"])
 
 
 @router.post("/api/chat", summary="Chat with CRM AI assistant", response_model=ChatResponse)
-async def chat_endpoint(
-    payload: ChatRequest,
-    request: Request,
-    current_user: User = Depends(get_current_user),
-):
+async def chat_endpoint(payload: ChatRequest, request: Request, current_user: User = Depends(get_current_user)):
     """
     Send a natural-language message to the CRM chatbot.
     The AI assistant can perform CRM operations like creating leads,
@@ -28,7 +24,8 @@ async def chat_endpoint(
     reply = await process_query(
         query=payload.message, 
         base_url=base_url,
-        access_token=access_token
+        access_token=access_token,
+        user_id=current_user.id
     )
 
     return ChatResponse(reply=reply)
