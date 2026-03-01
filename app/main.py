@@ -115,13 +115,11 @@ class MCPForwardAuth(httpx.Auth):
         yield request
 
 # Convert to MCP server
-mcp = FastMCP.from_fastapi(
-    app=app,
-    httpx_client_kwargs={"auth": MCPForwardAuth()}
-) 
+mcp = FastMCP.from_fastapi(app=app, httpx_client_kwargs={"auth": MCPForwardAuth()}) 
 mcp_app = mcp.http_app(path='/mcp') # Create ASGI app from MCP server
-# mount MCP app to FastAPI app
+
+# Mount MCP app to FastAPI app
 app.mount("/llm", mcp_app)
 
-print("✅  MCP Server mounted at /mcp")
+print("✅ MCP Server mounted at /mcp")
        
