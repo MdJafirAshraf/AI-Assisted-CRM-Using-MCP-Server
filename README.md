@@ -131,10 +131,6 @@ AI-Assisted-CRM-Using-MCP-Server
 
 ---
 
-Here’s the **updated `.md` installation guide using `uv` properly** (creating environment + installing dependencies). I also made the language slightly clearer and more natural for a **GitHub README**.
-
----
-
 ## Installation
 
 ### Clone the Repository
@@ -144,8 +140,6 @@ git clone https://github.com/yourusername/AI-Assisted-CRM-Using-MCP-Server.git
 cd AI-Assisted-CRM-Using-MCP-Server
 ```
 
----
-
 ### Install `uv`
 
 If you don’t have **uv** installed, install it first.
@@ -153,8 +147,6 @@ If you don’t have **uv** installed, install it first.
 ```bash
 pip install uv
 ```
-
----
 
 ### Create Virtual Environment
 
@@ -184,8 +176,6 @@ Activate the environment:
 source .venv/bin/activate
 ```
 
----
-
 ### Install Dependencies
 
 Install the project dependencies:
@@ -193,8 +183,6 @@ Install the project dependencies:
 ```bash
 uv pip install -r requirements.txt
 ```
-
----
 
 ### Environment Variables
 
@@ -221,8 +209,6 @@ The application will start at:
 http://127.0.0.1:8000
 ```
 
----
-
 ### API Documentation
 
 FastAPI provides interactive API documentation.
@@ -232,8 +218,6 @@ FastAPI provides interactive API documentation.
 ```
 http://127.0.0.1:8000/docs
 ```
-
----
 
 ### MCP Endpoint
 
@@ -245,7 +229,6 @@ The **MCP server** is exposed at:
 
 This endpoint allows **AI agents to interact with the CRM backend APIs as MCP tools**.
 
----
 
 If you'd like, I can also help you add **3 more powerful README sections** that make your repo look **more professional for AI/LLM engineer portfolios**:
 
@@ -255,6 +238,7 @@ If you'd like, I can also help you add **3 more powerful README sections** that 
 
 These sections make recruiters immediately understand the project.
 
+---
 
 ## Example Chat Interaction
 
