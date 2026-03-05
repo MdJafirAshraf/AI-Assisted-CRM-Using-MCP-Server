@@ -1,74 +1,52 @@
 # AI-Assisted CRM using MCP Server
 
-This is an experimental AI-powered CRM application that I built using FastAPI and the Model Context Protocol (MCP).
+This is an experimental **AI-powered CRM application** I built using **FastAPI** and the **Model Context Protocol (MCP)**.
 
-I created this project to explore how MCP can be integrated into a real-world backend application so that AI agents can interact with APIs and perform CRM operations using natural language.
+I created this project to explore how MCP can be integrated into a real-world backend so that **AI agents can interact with APIs and perform CRM operations using natural language**.
 
-In this system, I designed three main components: a CRM API, an MCP server, and an AI chatbot interface. Through the chatbot, users can perform different CRM actions such as creating contacts, retrieving lead details, updating information, managing tasks, and more — simply by typing natural language instructions.
+The system includes a **CRM API, MCP server, and an AI chatbot interface**. Through the chatbot, users can perform actions like creating contacts, retrieving lead details, updating information, and managing tasks using simple natural language commands.
 
-I built this project mainly as a learning experiment to understand and explore:
+I built this project mainly to learn and experiment with:
 
 - Model Context Protocol (MCP)
-- How AI agents can integrate with backend services
+- AI agent integration with backend APIs
 - Tool-based LLM workflows
-- The architecture of real-world AI applications
+- Real-world AI application architecture
 
 ---
 
 ## Features
 
 ### AI Chatbot with MCP Tools
-
-In this project, I implemented a chatbot that allows users to interact with the CRM system using natural language..
+I built a chatbot that allows users to interact with the CRM using natural language.  
+The chatbot communicates with the **MCP server**, which exposes backend APIs as tools for the AI agent.
 
 Example prompts:
 
-* "Create a new contact named John Doe"
-* "Show all leads with status Open"
-* "Update contact phone number"
-* "List all tasks for today"
-
-The chatbot communicates with the **MCP server**, which exposes backend APIs as tools for the AI agent.
+- "Create a new contact named John Doe"
+- "Show all leads with status Open"
+- "Update contact phone number"
+- "List all tasks for today"
 
 ---
 
 ### CRM Backend
-
-The CRM backend includes APIs for managing:
-
-* Contacts
-* Leads
-* Deals
-* Tasks
-* Users
+The backend provides APIs for managing **Contacts, Leads, Deals, Tasks, and Users**.
 
 ---
 
 ### MCP Server Integration
-
-The project exposes the FastAPI backend as an **MCP-compatible server**, allowing AI agents to call backend APIs through structured tools.
+The FastAPI backend is exposed as an **MCP-compatible server**, enabling AI agents to call APIs through structured tools.
 
 ---
 
-### Redis-based Memory Cache
-
-To optimize LLM usage:
-
-* User queries are cached
-* Repeated questions return cached responses
-* Reduces token usage and API latency
+### Redis Memory Cache
+User queries are cached using **Redis**, allowing repeated questions to return cached responses and reducing LLM token usage and latency.
 
 ---
 
 ### JWT Authentication
-
-Secure authentication system with:
-
-* User login
-* Role-based permissions
-* Token-based authentication
-
----
+Secure authentication with **user login, role-based permissions, and token-based access**.
 
 ## Architecture Overview
 
