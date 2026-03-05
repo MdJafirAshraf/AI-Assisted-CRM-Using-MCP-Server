@@ -39,6 +39,7 @@ def get_contact(contact_id: int, db: Session = Depends(get_db)):
     return contact.to_dict()
 
 
+
 @router.post("/api/contacts", summary="Create a contact")
 @invalidate_user_cache
 def create_contact(data: ContactCreate, db: Session = Depends(get_db)):
