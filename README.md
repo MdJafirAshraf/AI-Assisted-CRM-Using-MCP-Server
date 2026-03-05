@@ -28,22 +28,15 @@ Example prompts:
 - "Update contact phone number"
 - "List all tasks for today"
 
----
 
 ### CRM Backend
 The backend provides APIs for managing **Contacts, Leads, Deals, Tasks, and Users**.
 
----
-
 ### MCP Server Integration
 The FastAPI backend is exposed as an **MCP-compatible server**, enabling AI agents to call APIs through structured tools.
 
----
-
 ### Redis Memory Cache
 User queries are cached using **Redis**, allowing repeated questions to return cached responses and reducing LLM token usage and latency.
-
----
 
 ### JWT Authentication
 Secure authentication with **user login, role-based permissions, and token-based access**.
