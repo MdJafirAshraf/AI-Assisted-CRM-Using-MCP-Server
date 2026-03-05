@@ -48,6 +48,8 @@ User queries are cached using **Redis**, allowing repeated questions to return c
 ### JWT Authentication
 Secure authentication with **user login, role-based permissions, and token-based access**.
 
+---
+
 ## Architecture Overview
 
 ### CRM + MCP System Architecture
