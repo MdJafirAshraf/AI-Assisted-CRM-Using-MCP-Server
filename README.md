@@ -1,24 +1,25 @@
 # AI-Assisted CRM using MCP Server
 
-An experimental **AI-powered CRM application** built with **FastAPI** and the **Model Context Protocol (MCP)**.
-This project demonstrates how MCP can be integrated into a real-world application to allow **AI agents to interact with backend APIs and perform CRM operations through natural language**.
+This is an experimental AI-powered CRM application that I built using FastAPI and the Model Context Protocol (MCP).
 
-The system includes a **CRM API**, **MCP server**, and an **AI chatbot interface** capable of executing actions such as creating contacts, retrieving lead information, managing tasks, and more.
+I created this project to explore how MCP can be integrated into a real-world backend application so that AI agents can interact with APIs and perform CRM operations using natural language.
 
-This project was built as a learning initiative to explore:
+In this system, I designed three main components: a CRM API, an MCP server, and an AI chatbot interface. Through the chatbot, users can perform different CRM actions such as creating contacts, retrieving lead details, updating information, managing tasks, and more — simply by typing natural language instructions.
 
-* Model Context Protocol (MCP)
-* AI Agent integration with backend services
-* Tool-based LLM workflows
-* Real-world AI application architecture
+I built this project mainly as a learning experiment to understand and explore:
+
+- Model Context Protocol (MCP)
+- How AI agents can integrate with backend services
+- Tool-based LLM workflows
+- The architecture of real-world AI applications
 
 ---
 
-# Features
+## Features
 
 ### AI Chatbot with MCP Tools
 
-Users can interact with the CRM using natural language.
+In this project, I implemented a chatbot that allows users to interact with the CRM system using natural language..
 
 Example prompts:
 
@@ -69,7 +70,7 @@ Secure authentication system with:
 
 ---
 
-# Tech Stack
+## Tech Stack
 
 Backend
 
@@ -96,36 +97,15 @@ Frontend
 
 ---
 
-# Architecture Overview
+## Architecture Overview
 
-```
-User
-   │
-   │ Chat Request
-   ▼
-FastAPI Chat Endpoint
-   │
-   ▼
-LLM Client (LangChain Agent)
-   │
-   ▼
-MCP Client
-   │
-   ▼
-MCP Server (FastAPI Tools)
-   │
-   ▼
-CRM APIs
-   │
-   ▼
-Database
-```
+
 
 The LLM agent decides which MCP tool to call based on the user prompt.
 
 ---
 
-# Project Structure
+## Project Structure
 
 ```
 AI-Assisted-CRM-Using-MCP-Server
@@ -195,68 +175,91 @@ AI-Assisted-CRM-Using-MCP-Server
 
 ---
 
-# Installation
+Here’s the **updated `.md` installation guide using `uv` properly** (creating environment + installing dependencies). I also made the language slightly clearer and more natural for a **GitHub README**.
+
+---
+
+## Installation
 
 ### Clone the Repository
 
-```
+```bash
 git clone https://github.com/yourusername/AI-Assisted-CRM-Using-MCP-Server.git
 cd AI-Assisted-CRM-Using-MCP-Server
 ```
 
 ---
 
-### Create Virtual Environment
+## Install `uv`
+
+If you don’t have **uv** installed, install it first.
+
+```bash
+pip install uv
+```
+
+---
+
+## Create Virtual Environment
+
+Initiate uv:
 
 ```
-python -m venv .venv
+uv init
 ```
 
-Activate it:
+Create a virtual environment using **uv**:
 
-Windows
-
+```bash
+uv venv
 ```
+
+Activate the environment:
+
+**Windows**
+
+```bash
 .venv\Scripts\activate
 ```
 
-Linux / Mac
+**Linux / Mac**
 
-```
+```bash
 source .venv/bin/activate
 ```
 
 ---
 
-### Install Dependencies
+## Install Dependencies
 
-```
-pip install -r requirements.txt
+Install the project dependencies:
+
+```bash
+uv pip install -r requirements.txt
 ```
 
 ---
 
-### Environment Variables
+## Environment Variables
 
-Create a `.env` file:
+Create a `.env` file in the project root:
 
-```
+```env
 GROQ_API_KEY=your_groq_api_key
-REDIS_URL=redis://localhost:6379
-SECRET_KEY=your_secret_key
+JWT_SECRET_KEY=your_secret_key
 ```
 
 ---
 
-# Running the Application
+## Running the Application
 
-Start the server:
+Start the FastAPI server:
 
-```
+```bash
 python run.py
 ```
 
-Application will run at:
+The application will start at:
 
 ```
 http://127.0.0.1:8000
@@ -264,11 +267,11 @@ http://127.0.0.1:8000
 
 ---
 
-# API Documentation
+## API Documentation
 
-FastAPI provides interactive documentation:
+FastAPI provides interactive API documentation.
 
-Swagger UI
+**Swagger UI**
 
 ```
 http://127.0.0.1:8000/docs
@@ -276,19 +279,28 @@ http://127.0.0.1:8000/docs
 
 ---
 
-# MCP Endpoint
+## MCP Endpoint
 
-The MCP server is exposed at:
+The **MCP server** is exposed at:
 
 ```
 /llm/mcp
 ```
 
-This allows AI agents to access CRM APIs as tools.
+This endpoint allows **AI agents to interact with the CRM backend APIs as MCP tools**.
 
 ---
 
-# Example Chat Interaction
+If you'd like, I can also help you add **3 more powerful README sections** that make your repo look **more professional for AI/LLM engineer portfolios**:
+
+* **Project Architecture Diagram**
+* **MCP Tool Flow Explanation**
+* **AI Agent Workflow (User → LLM → MCP → API)**
+
+These sections make recruiters immediately understand the project.
+
+
+## Example Chat Interaction
 
 User Prompt
 
@@ -305,7 +317,7 @@ AI Agent
 
 ---
 
-# Learning Objectives
+## Learning Objectives
 
 This project demonstrates:
 
@@ -317,36 +329,9 @@ This project demonstrates:
 
 ---
 
-# Future Improvements
-
-Possible enhancements:
-
-* Multi-tenant CRM support
-* Vector database for semantic memory
-* Conversation history storage
-* Streaming responses
-* AI analytics for CRM data
-* Role-based AI permissions
-
----
-
 # License
 
 This project is open-source and available under the MIT License.
 
----
 
-# Author
 
-Mohamed Jafir Ashraf
-
-Software Engineer | Python Developer | AI Application Engineer
-
----
-
-# Acknowledgements
-
-* FastAPI
-* LangChain
-* Groq
-* Model Context Protocol
