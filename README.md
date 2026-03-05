@@ -70,36 +70,7 @@ Secure authentication system with:
 
 ---
 
-## Tech Stack
-
-Backend
-
-* FastAPI
-* Python
-* SQLAlchemy
-* Jinja2 Templates
-
-AI & LLM
-
-* LangChain
-* Groq LLM
-* MCP (Model Context Protocol)
-
-Caching
-
-* Redis
-
-Frontend
-
-* HTML
-* CSS
-* JavaScript
-
----
-
 ## Architecture Overview
-
-
 
 The LLM agent decides which MCP tool to call based on the user prompt.
 
@@ -190,7 +161,7 @@ cd AI-Assisted-CRM-Using-MCP-Server
 
 ---
 
-## Install `uv`
+### Install `uv`
 
 If you don’t have **uv** installed, install it first.
 
@@ -200,7 +171,7 @@ pip install uv
 
 ---
 
-## Create Virtual Environment
+### Create Virtual Environment
 
 Initiate uv:
 
@@ -230,7 +201,7 @@ source .venv/bin/activate
 
 ---
 
-## Install Dependencies
+### Install Dependencies
 
 Install the project dependencies:
 
@@ -240,7 +211,7 @@ uv pip install -r requirements.txt
 
 ---
 
-## Environment Variables
+### Environment Variables
 
 Create a `.env` file in the project root:
 
@@ -267,7 +238,7 @@ http://127.0.0.1:8000
 
 ---
 
-## API Documentation
+### API Documentation
 
 FastAPI provides interactive API documentation.
 
@@ -279,7 +250,7 @@ http://127.0.0.1:8000/docs
 
 ---
 
-## MCP Endpoint
+### MCP Endpoint
 
 The **MCP server** is exposed at:
 
