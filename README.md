@@ -72,6 +72,18 @@ Secure authentication system with:
 
 ## Architecture Overview
 
+### CRM + MCP System Architecture
+
+<p align="center">
+  <img src="https://github.com/MdJafirAshraf/AI-Assisted-CRM-Using-MCP-Server/blob/main/images/crm_mcp_architecture_diagram.png" width="900">
+</p>
+
+### Layered Architecture
+
+<p align="center">
+  <img src="https://github.com/MdJafirAshraf/AI-Assisted-CRM-Using-MCP-Server/blob/main/images/crm_mcp_layer_architecture_diagram.png" width="900">
+</p>
+
 The LLM agent decides which MCP tool to call based on the user prompt.
 
 ---
