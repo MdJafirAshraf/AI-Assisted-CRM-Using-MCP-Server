@@ -49,7 +49,7 @@ def dashboard(request: Request, db: Session = Depends(get_db), current_user: Use
 
 
 #  Dashboard API
-@router.get("/api/dashboard", summary="Get dashboard stats", tags=["Dashboard"])
+@router.get("/api/dashboard", summary="Get dashboard stats")
 def dashboard_api(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """Retrieve summary statistics for the CRM dashboard."""
     try:

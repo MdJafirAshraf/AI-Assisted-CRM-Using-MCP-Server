@@ -21,7 +21,7 @@ def deals_page(request: Request, current_user: User = Depends(get_current_user))
 
 
 #  API Endpoints 
-@router.get("/api/deals", summary="List all deals")
+@router.get("/api/deals", summary="List all deals", tags=["mcp"])
 def list_deals(db: Session = Depends(get_db)):
     """Retrieve all deals from the CRM database."""
     deals = db.query(Deal).order_by(Deal.created_at.desc()).all()
@@ -37,7 +37,7 @@ def get_deal(deal_id: int, db: Session = Depends(get_db)):
     return deal.to_dict()
 
 
-@router.post("/api/deals", summary="Create a deal")
+@router.post("/api/deals", summary="Create a deal", tags=["mcp"])
 def create_deal(data: DealCreate, db: Session = Depends(get_db)):
     """Create a new deal in the CRM."""
     deal = Deal(

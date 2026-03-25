@@ -21,7 +21,7 @@ def tasks_page(request: Request, current_user: User = Depends(get_current_user))
 
 
 #  API Endpoints 
-@router.get("/api/tasks", summary="List all tasks")
+@router.get("/api/tasks", summary="List all tasks", tags=["mcp"])
 def list_tasks(db: Session = Depends(get_db)):
     """Retrieve all tasks from the CRM database."""
     tasks = db.query(Task).order_by(Task.created_at.desc()).all()
@@ -37,7 +37,7 @@ def get_task(task_id: int, db: Session = Depends(get_db)):
     return task.to_dict()
 
 
-@router.post("/api/tasks", summary="Create a task")
+@router.post("/api/tasks", summary="Create a task", tags=["mcp"])
 def create_task(data: TaskCreate, db: Session = Depends(get_db)):
     """Create a new task in the CRM."""
     task = Task(
@@ -55,7 +55,7 @@ def create_task(data: TaskCreate, db: Session = Depends(get_db)):
     return task.to_dict()
 
 
-@router.put("/api/tasks/{task_id}", summary="Update a task")
+@router.put("/api/tasks/{task_id}", summary="Update a task", tags=["mcp"])
 def update_task(task_id: int, data: TaskUpdate, db: Session = Depends(get_db)):
     """Update an existing task by ID."""
     task = db.query(Task).filter(Task.id == task_id).first()

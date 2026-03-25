@@ -21,7 +21,7 @@ def leads_page(request: Request, current_user: User = Depends(get_current_user))
 
 
 #  API Endpoints 
-@router.get("/api/leads", summary="List all leads")
+@router.get("/api/leads", summary="List all leads", tags=["mcp"])
 def list_leads(db: Session = Depends(get_db)):
     """Retrieve all leads from the CRM database."""
     leads = db.query(Lead).order_by(Lead.created_at.desc()).all()
@@ -37,7 +37,7 @@ def get_lead(lead_id: int, db: Session = Depends(get_db)):
     return lead.to_dict()
 
 
-@router.post("/api/leads", summary="Create a lead")
+@router.post("/api/leads", summary="Create a lead", tags=["mcp"])
 def create_lead(data: LeadCreate, db: Session = Depends(get_db)):
     """Create a new lead in the CRM."""
     lead = Lead(
@@ -59,6 +59,22 @@ def create_lead(data: LeadCreate, db: Session = Depends(get_db)):
 def update_lead(lead_id: int, data: LeadUpdate, db: Session = Depends(get_db)):
     """Update an existing lead by ID."""
     lead = db.query(Lead).filter(Lead.id == lead_id).first()
+    if not lead:
+        raise HTTPException(status_code=404, detail="Lead not found")
+    
+    update_data = data.dict(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(lead, key, value)
+
+    db.commit()
+    db.refresh(lead)
+    return lead.to_dict()
+
+
+@router.put("/api/leads/by-email", summary="Update a lead by email")
+def update_lead_by_email(email: str, data: LeadUpdate, db: Session = Depends(get_db)):
+    """Update an existing lead by email."""
+    lead = db.query(Lead).filter(Lead.email == email).first()
     if not lead:
         raise HTTPException(status_code=404, detail="Lead not found")
     

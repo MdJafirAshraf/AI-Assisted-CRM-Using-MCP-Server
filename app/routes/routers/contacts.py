@@ -23,7 +23,7 @@ def contacts_page(request: Request, current_user: User = Depends(get_current_use
 
 
 # API Endpoints 
-@router.get("/api/contacts", summary="List all contacts")
+@router.get("/api/contacts", summary="List all contacts", tags=["mcp"])
 def list_contacts(db: Session = Depends(get_db)):
     """Retrieve all contacts from the CRM database."""
     contacts = db.query(Contact).order_by(Contact.created_at.desc()).all()
@@ -33,13 +33,34 @@ def list_contacts(db: Session = Depends(get_db)):
 @router.get("/api/contacts/{contact_id}", summary="Get a contact")
 def get_contact(contact_id: int, db: Session = Depends(get_db)):
     """Retrieve a single contact by ID."""
-    contact = db.query(Contact).filter(Contact.id == contact_id).first()
+    contact = db.get(Contact, contact_id)
     if not contact:
         raise HTTPException(status_code=404, detail="Contact not found")
     return contact.to_dict()
 
 
-@router.post("/api/contacts", summary="Create a contact")
+@router.get("/api/contacts/search", summary="Search contacts", tags=["mcp"])
+def get_contact_by_criteria(
+    name: str = None,
+    phone: str = None,
+    email: str = None,
+    db: Session = Depends(get_db)
+):
+    """Search for contacts by name, phone, or email."""
+    query = db.query(Contact)
+
+    if name:
+        query = query.filter(Contact.name.ilike(f"%{name}%"))
+    if phone:
+        query = query.filter(Contact.phone.ilike(f"%{phone}%"))
+    if email:
+        query = query.filter(Contact.email.ilike(f"%{email}%"))
+
+    contacts = query.all()
+    return [c.to_dict() for c in contacts]
+
+
+@router.post("/api/contacts", summary="Create a contact", tags=["mcp"])
 @invalidate_user_cache
 def create_contact(data: ContactCreate, db: Session = Depends(get_db)):
     """Create a new contact in the CRM."""
@@ -58,7 +79,7 @@ def create_contact(data: ContactCreate, db: Session = Depends(get_db)):
     return contact.to_dict()
 
 
-@router.put("/api/contacts/{contact_id}", summary="Update a contact", tags=["Contacts"])
+@router.put("/api/contacts/{contact_id}", summary="Update a contact")
 @invalidate_user_cache
 def update_contact(contact_id: int, data: ContactUpdate, db: Session = Depends(get_db)):
     """Update an existing contact by ID."""
@@ -75,7 +96,32 @@ def update_contact(contact_id: int, data: ContactUpdate, db: Session = Depends(g
     return contact.to_dict()
 
 
-@router.delete("/api/contacts/{contact_id}", summary="Delete a contact", tags=["Contacts"])
+@router.put("/api/contacts/by-email", summary="Update a contact by email", tags=["mcp"])
+@invalidate_user_cache
+def update_contact_by_email(
+    email: str,
+    data: ContactUpdate,
+    db: Session = Depends(get_db)
+):
+    """Update an existing contact by email."""
+
+    contact = db.query(Contact).filter(Contact.email == email).first()
+
+    if not contact:
+        raise HTTPException(status_code=404, detail="Contact not found")
+
+    update_data = data.dict(exclude_unset=True)
+
+    for key, value in update_data.items():
+        setattr(contact, key, value)
+
+    db.commit()
+    db.refresh(contact)
+
+    return contact.to_dict()
+
+
+@router.delete("/api/contacts/{contact_id}", summary="Delete a contact")
 @invalidate_user_cache
 def delete_contact(contact_id: int, db: Session = Depends(get_db), current_user: User = Depends(require_admin)):
     """Delete a contact from the CRM by ID. Admin only."""
