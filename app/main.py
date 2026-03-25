@@ -1,19 +1,22 @@
 import os, uuid
 from sqlalchemy.orm import Session
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request, Depends
+
+from fastmcp import FastMCP
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
-from fastmcp import FastMCP
-import httpx
-from fastmcp.server.dependencies import get_http_request
+from starlette.exceptions import HTTPException as StarletteHTTPException
+
+
 from app.models.users import User
-from app.db import engine, Base, SessionLocal
 from app.routes.routes import router
-from app.dependencies.auth import get_current_user
 from app.core.security import hash_password
+from app.core.mcp_auth import MCPForwardAuth
+from app.db import engine, Base, SessionLocal
 
 
 def seed_admin(db: Session):
@@ -55,11 +58,7 @@ async def combined_lifespan(fastapi_app: FastAPI):
             yield
 
 #  FastAPI App 
-app = FastAPI(
-    title="CRM with MCP Server",
-    description="A CRM application with MCP (Model Context Protocol) server integration",
-    lifespan=combined_lifespan
-)
+app = FastAPI(title="CRM with MCP Server", lifespan=combined_lifespan)
 
 # app middleware
 app.add_middleware(
@@ -83,9 +82,6 @@ app.include_router(router, tags=["API Endpoints"])
 
 # ═══ Auth Exception Handler ═══
 # Redirect 401 errors on HTML page requests to the login page
-from starlette.exceptions import HTTPException as StarletteHTTPException
-from fastapi.responses import JSONResponse
-
 @app.exception_handler(StarletteHTTPException)
 async def custom_http_exception_handler(request: Request, exc: StarletteHTTPException):
     if exc.status_code == 401:
@@ -103,20 +99,20 @@ async def custom_http_exception_handler(request: Request, exc: StarletteHTTPExce
     )
 
 
-class MCPForwardAuth(httpx.Auth):
-    def auth_flow(self, request):
-        try:
-            req = get_http_request()
-            auth = req.headers.get("Authorization")
-            if auth:
-                request.headers["Authorization"] = auth
-        except Exception:
-            pass
-        yield request
-
 # Convert to MCP server
-mcp = FastMCP.from_fastapi(app=app, httpx_client_kwargs={"auth": MCPForwardAuth()}) 
-mcp_app = mcp.http_app(path='/mcp') # Create ASGI app from MCP server
+def create_mcp_filtered_app(app: FastAPI, include_tags={"mcp"}):
+    filtered_app = FastAPI()
+
+    for route in app.routes:
+        if hasattr(route, "tags"):
+            if any(tag in include_tags for tag in route.tags):
+                filtered_app.router.routes.append(route)
+
+    return filtered_app
+
+filtered_app = create_mcp_filtered_app(app)
+mcp = FastMCP.from_fastapi(app=filtered_app, httpx_client_kwargs={"auth": MCPForwardAuth()}) 
+mcp_app = mcp.http_app(path='/mcp')
 
 # Mount MCP app to FastAPI app
 app.mount("/llm", mcp_app)
