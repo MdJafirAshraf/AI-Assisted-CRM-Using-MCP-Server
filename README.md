@@ -1,45 +1,25 @@
-# AI-Assisted CRM using MCP Server
+# AI-Assisted CRM Using MCP Server
 
-This is an experimental **AI-powered CRM application** I built using **FastAPI** and the **Model Context Protocol (MCP)**.
+A full-stack CRM application integrated with an MCP (Model Context Protocol) server, built for learning how real-world AI agents communicate with backend services. The project includes a built-in chatbot that lets you perform CRM operations — creating contacts, managing deals, updating leads — using natural language prompts.
 
-I created this project to explore how MCP can be integrated into a real-world backend so that **AI agents can interact with APIs and perform CRM operations using natural language**.
+I built this using FastAPI, which made it straightforward to expose every endpoint as both a REST API and an MCP tool simultaneously. The goal was to demonstrate how modern applications can be designed to serve both human users and AI agents from a single codebase.
 
-The system includes a **CRM API, MCP server, and an AI chatbot interface**. Through the chatbot, users can perform actions like creating contacts, retrieving lead details, updating information, and managing tasks using simple natural language commands.
-
-I built this project mainly to learn and experiment with:
-
-- Model Context Protocol (MCP)
-- AI agent integration with backend APIs
-- Tool-based LLM workflows
-- Real-world AI application architecture
+> This project is purely for educational purposes — to understand how to build your own MCP server, how to structure tools that AI agents can understand, and how AI agents communicate with MCP servers in a real-world context.
 
 ---
 
-## Features
+## Why I Built This
 
-### AI Chatbot with MCP Tools
-I built a chatbot that allows users to interact with the CRM using natural language.  
-The chatbot communicates with the **MCP server**, which exposes backend APIs as tools for the AI agent.
+AI agents are everywhere now. Most developers know how to build APIs for users, but building APIs that AI agents can reliably understand and use is a different skill. This project is my attempt to bridge that gap with a real, working example.
 
-Example prompts:
+What I handled in this project:
 
-- "Create a new contact named John Doe"
-- "Show all leads with status Open"
-- "Update contact phone number"
-- "List all tasks for today"
-
-
-### CRM Backend
-The backend provides APIs for managing **Contacts, Leads, Deals, Tasks, and Users**.
-
-### MCP Server Integration
-The FastAPI backend is exposed as an **MCP-compatible server**, enabling AI agents to call APIs through structured tools.
-
-### Redis Memory Cache
-User queries are cached using **Redis**, allowing repeated questions to return cached responses and reducing LLM token usage and latency.
-
-### JWT Authentication
-Secure authentication with **user login, role-based permissions, and token-based access**.
+- Designed the system architecture and layered structure
+- Built the MCP server on top of FastAPI endpoints
+- Created the LLM client and AI agent
+- Implemented Redis-based cache memory for faster agent-to-MCP communication and to avoid redundant API calls
+- Secured all MCP access with JWT authentication via request headers
+- Enforced role-based access control for both the REST API and MCP tools
 
 ---
 
@@ -57,7 +37,7 @@ Secure authentication with **user login, role-based permissions, and token-based
   <img src="https://github.com/MdJafirAshraf/AI-Assisted-CRM-Using-MCP-Server/blob/main/images/crm_mcp_layer_architecture_diagram.png" width="900">
 </p>
 
-The LLM agent decides which MCP tool to call based on the user prompt.
+The LLM agent reads the user prompt, decides which MCP tool to call, executes the corresponding CRM API, and returns the result — all automatically.
 
 ---
 
@@ -133,58 +113,47 @@ AI-Assisted-CRM-Using-MCP-Server
 
 ## Installation
 
-### Clone the Repository
+### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/yourusername/AI-Assisted-CRM-Using-MCP-Server.git
 cd AI-Assisted-CRM-Using-MCP-Server
 ```
 
-### Install `uv`
+### 2. Install `uv`
 
-If you don’t have **uv** installed, install it first.
+I use `uv` for package management — it's significantly faster than pip.
 
 ```bash
 pip install uv
 ```
 
-### Create Virtual Environment
-
-Initiate uv:
-
-```
-uv init
-```
-
-Create a virtual environment using **uv**:
+### 3. Create a Virtual Environment
 
 ```bash
+uv init
 uv venv
 ```
 
-Activate the environment:
+Activate it:
 
 **Windows**
-
 ```bash
 .venv\Scripts\activate
 ```
 
-**Linux / Mac**
-
+**Linux / macOS**
 ```bash
 source .venv/bin/activate
 ```
 
-### Install Dependencies
-
-Install the project dependencies:
+### 4. Install Dependencies
 
 ```bash
 uv pip install -r requirements.txt
 ```
 
-### Environment Variables
+### 5. Configure Environment Variables
 
 Create a `.env` file in the project root:
 
@@ -197,13 +166,11 @@ JWT_SECRET_KEY=your_secret_key
 
 ## Running the Application
 
-Start the FastAPI server:
-
 ```bash
 python run.py
 ```
 
-The application will start at:
+The server will start at:
 
 ```
 http://127.0.0.1:8000
@@ -211,9 +178,7 @@ http://127.0.0.1:8000
 
 ### API Documentation
 
-FastAPI provides interactive API documentation.
-
-**Swagger UI**
+FastAPI's interactive Swagger UI is available at:
 
 ```
 http://127.0.0.1:8000/docs
@@ -221,57 +186,33 @@ http://127.0.0.1:8000/docs
 
 ### MCP Endpoint
 
-The **MCP server** is exposed at:
+The MCP server is exposed at:
 
 ```
 /llm/mcp
 ```
 
-This endpoint allows **AI agents to interact with the CRM backend APIs as MCP tools**.
-
-
-If you'd like, I can also help you add **3 more powerful README sections** that make your repo look **more professional for AI/LLM engineer portfolios**:
-
-* **Project Architecture Diagram**
-* **MCP Tool Flow Explanation**
-* **AI Agent Workflow (User → LLM → MCP → API)**
-
-These sections make recruiters immediately understand the project.
+This is the endpoint that AI agents use to interact with the CRM backend as a set of callable MCP tools.
 
 ---
 
 ## Example Chat Interaction
 
-User Prompt
+The chatbot supports natural language commands for creating, updating, and retrieving records. Delete operations and queries using raw IDs are intentionally not supported through the chat interface.
 
+**User prompt:**
 ```
 Create a new contact named John Doe with phone number 9876543210
 ```
 
-AI Agent
-
-1. Understands intent
-2. Calls MCP tool
-3. Executes CRM API
-4. Returns response to user
-
----
-
-## Learning Objectives
-
-This project demonstrates:
-
-* Integrating **Model Context Protocol (MCP)** with FastAPI
-* Building **AI agents that call backend APIs**
-* Tool-based LLM architecture
-* Caching LLM responses using Redis
-* Designing scalable AI-powered backend systems
+**What happens internally:**
+1. The AI agent interprets the intent from the prompt
+2. It selects and calls the appropriate MCP tool
+3. The tool executes the corresponding CRM API
+4. The result is returned to the user in natural language
 
 ---
 
-# License
+## License
 
-This project is open-source and available under the MIT License.
-
-
-
+This project is open-source and available under the [MIT License](LICENSE).
