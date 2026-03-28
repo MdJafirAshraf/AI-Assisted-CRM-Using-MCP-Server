@@ -3,15 +3,18 @@ from langchain.agents import create_agent
 from langchain_core.tools.base import ToolException
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langchain_core.messages import SystemMessage, HumanMessage
+
 from app.chatbot.cache_service import get_cached_response, set_cached_response
+from app.core.config import Settings
 from app.chatbot.handle_error import handle_tool_error
 from dotenv import load_dotenv
 
 load_dotenv()
+settings = Settings()
 
 # Global Model (Stateless, safe to reuse)
 model = ChatGroq(
-    model="llama-3.1-8b-instant",
+    model=settings.MODEL_NAME,
     temperature=0,
 )
 
@@ -46,6 +49,8 @@ async def process_query(query: str, base_url: str, access_token: str, user_id: i
         
         # This establishes the connection using the headers defined above
         tools = await mcp_client.get_tools()
+        for tool in tools:
+            print(f"Available tool: {tool.name} - {tool.description}")
         
         # Create Agent
         agent = create_agent(model, tools)
@@ -58,7 +63,7 @@ async def process_query(query: str, base_url: str, access_token: str, user_id: i
 
         # Invoke
         response = await agent.ainvoke({"messages": messages})
-        print("\nActual Response:", response)
+        # print("\nActual Response:", response)
         
         final_response = response["messages"][-1].content
         print("\nFinal Response:", final_response)

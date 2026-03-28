@@ -24,6 +24,7 @@ class Settings(BaseSettings):
 
     # LLM
     GROQ_API_KEY: str = Field(default="", description="API key for GROQ LLM service")
+    MODEL_NAME: str = "llama-3.1-8b-instant"
 
     # Redis
     REDIS_URL: str = "redis://localhost:6379/0"
